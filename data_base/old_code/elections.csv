@@ -1,0 +1,2 @@
+name,voters,candidates,num_offices
+1,data_base/voters/voters_1.csv,data_base/candidates/candidates_1.csv,1,data_base/offices/offices_1.csv
