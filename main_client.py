@@ -10,12 +10,13 @@ unidade = "1"
 cargo = "presidente"
 id = "13"
 option = 0
-option = int(input('[REGISTER: 0, APPLYING: 1, QUIT: 2]'))
-if option == 0:
-    info = input('Digite nome, cpf e identificador da eleição: ')
-    info = info.split()
-    send_to_reg(info[0], info[1], info[2])
-if option == 1:
-    info = input('Digite nome, cpf, identificador da eleição, cargo e número de campanha: ')
-    info = info.split()
-    send_to_adm(info[0], info[1], info[2], info[3], info[4])
+while option != 1:
+    option = int(input('[REGISTER: 0, APPLYING: 1, QUIT: 2]'))
+    if option == 0:
+        info = input('Digite nome, cpf e identificador da eleição: ')
+        info = info.split()
+        send_to_reg(info[0], info[1], info[2])
+    if option == 1:
+        info = input('Digite nome, cpf, identificador da eleição, cargo e número de campanha: ')
+        info = info.split()
+        send_to_adm(info[0], info[1], info[2], info[3], info[4])

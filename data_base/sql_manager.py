@@ -70,7 +70,7 @@ def reg_candidate(name, cpf, id, office, campaignId):
 #create_election(3)
 
 #2 criar cargos
-#create_offices('presidente', 1, 13)
+#create_offices('presidente', 1, 10)
 #create_offices('presidente', 2, 1)
 #create_offices('vice presidente', 2, 2)
 #create_offices('presidente', 3, 2)

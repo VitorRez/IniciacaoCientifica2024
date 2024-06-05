@@ -24,31 +24,24 @@ def send(msg):
     client.send(send_length)
     client.send(message)
 
-def inscrever(info, e):
-    nonce, cipher_text, enc_aes = e.e_protocol(info)
-    send(nonce)
-    send(cipher_text)
-    send(enc_aes)
-    print(client.recv(2048).decode(FORMAT))
+def registration(info, e):
+    enc_text = e.e_protocol(info)
+    send(enc_text)
+    print(client.recv(HEADER).decode(FORMAT))
 
-#envia os dados para gerar validar o eleitor e gera um par de chaves do rsa
-def gerar(info, e):
-    password = input("Password: ")
+def authentication(info, password, e):
     salt = get_random_bytes(16)
     dados = info.split()
     store_salt(f"clients/{dados[1]}", salt)
-    nonce, cipher_text, enc_aes = e.e_protocol(info)
+    enc_text = e.e_protocol(info)
     key = RSA.generate(2048)
     store_private_key(f"clients/{dados[1]}", key, password)
     sign = request(0, dados[0], key.public_key().export_key(), key)
     certificate("registrar", dados[0], key.public_key().export_key(), "BR", dados[1], "clients", sign)
-    send(nonce)
-    send(cipher_text)
-    send(enc_aes)
+    send(enc_text)
     send(key.public_key().export_key())
     print(client.recv(2048).decode(FORMAT))
 
-#função para enviar uma mensagem para o servidor do servidor
 def send_to_reg(nome, cpf, unidade):
     client.connect(ADDR)
     rsa_key = RSA.import_key(client.recv(2048))
@@ -58,8 +51,7 @@ def send_to_reg(nome, cpf, unidade):
     msg = input("[REGISTERING: 0, AUTHENTICATION: 1]: ")
     send(msg.encode(FORMAT))
     if msg == "0":
-        inscrever(info, e)
+        registration(info, e)
     if msg == "1":
-        gerar(info, e)
-
-
+        password = input("Create a password: ")
+        authentication(info, password, e)

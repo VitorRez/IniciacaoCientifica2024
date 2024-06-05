@@ -40,18 +40,22 @@ class CipherHandler:
     def e_protocol(self, msg):
         enc = self.encrypt_sym(msg)
         enc_rsa = self.encrypt(self.aes_key)
-        return (enc[0], enc[1], enc_rsa)
+        separator = b'-----'
+        enc_text = enc[0] + separator + enc[1] + separator + enc_rsa
+        return (enc_text)
     
-    def d_protocol(self, nonce, cipher_text, aes_enc, rsa_key):
-        aes_key = self.decrypt(aes_enc, rsa_key)
-        msg = self.decrypt_sym(nonce, cipher_text, aes_key)
+    def d_protocol(self, enc_text, rsa_key):
+        separator = b'-----'
+        enc = enc_text.split(separator)
+        aes_key = self.decrypt(enc[2], rsa_key)
+        msg = self.decrypt_sym(enc[0], enc[1], aes_key)
         return msg
+    
 
 #msg = 'banana'
 #rsa_key = RSA.generate(1024)
 #aes_key = get_random_bytes(16)
-#e = Cipher(RSA.import_key(rsa_key.public_key().export_key()), aes_key)
-#nonce, cipher, enc_aes = e.e_protocol(msg)
-#print(cipher)
-#plaintext = e.d_protocol(nonce, cipher, enc_aes, rsa_key.export_key('PEM'))
+#e = CipherHandler(RSA.import_key(rsa_key.public_key().export_key()), aes_key)
+#enc_text = e.e_protocol(msg)
+#plaintext = e.d_protocol(enc_text, rsa_key.export_key('PEM'))
 #print(plaintext)

@@ -13,7 +13,6 @@ ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-#função para enviar uma mensagem para o servidor do administrador
 def send(msg):
     message = msg
     msg_length = len(message)
@@ -21,9 +20,7 @@ def send(msg):
     send_length += b' ' * (HEADER - len(send_length))
     client.send(send_length)
     client.send(message)
-
-#envia os dados do eleitor juntamente com os dados assinados para a verificação
-#durante a etapa de candidatura
+    
 def send_to_adm(nome, cpf, unidade, cargo, id):
     client.connect(ADDR)
     password = input("password: ")
@@ -36,16 +33,11 @@ def send_to_adm(nome, cpf, unidade, cargo, id):
         s = signature(chave_rsa_priv)
         info = nome + " " + cpf + " " + unidade + " " + cargo + " " + id
         sign = s.sign(info)
-        nonce, cipher, enc_aes = e.e_protocol(info)
-        nonce_s, cipher_s, enc_aes_s = e.e_protocol(sign)
-        send(nonce)
-        send(cipher)
-        send(enc_aes)
-        send(nonce_s)
-        send(cipher_s)
-        send(enc_aes_s)
+        enc_text = e.e_protocol(info)
+        enc_text_s = e.e_protocol(sign)
+        send(enc_text)
+        send(enc_text_s)
         send(chave_rsa_pub)
-        print(client.recv(2048).decode(FORMAT))
+        print(client.recv(HEADER).decode(FORMAT))
     else:
-        print("Invalid password.")
-
+        print("Invalid password")

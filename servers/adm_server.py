@@ -19,17 +19,13 @@ def handle_client(conn, addr, adm):
     chave_aes = get_random_bytes(16)
     e_adm = CipherHandler(chave_rsa, chave_aes)
     s_adm = signature(chave_rsa)
-    nonce = get_nonce(conn, addr)
-    cipher = get_cipher(conn, addr)
-    enc_aes = get_enc_aes(conn, addr)
-    nonce_s = get_nonce(conn, addr)
-    cipher_s = get_cipher(conn, addr)
-    enc_aes_s = get_enc_aes(conn, addr)
-    text = e_adm.d_protocol(nonce, cipher, enc_aes, e_adm.rsa_key)
+    enc_text = get_msg(conn, addr)
+    enc_text_s = get_msg(conn, addr)
+    text = e_adm.d_protocol(enc_text, e_adm.rsa_key)
     dados = text.split()
     if search_voter(dados[1].decode('utf-8'), dados[2].decode('utf-8')):
-        text_s = e_adm.d_protocol(nonce_s, cipher_s, enc_aes_s, e_adm.rsa_key)
-        chave_eleitor = RSA.import_key(get_key(conn, addr))
+        text_s = e_adm.d_protocol(enc_text_s, e_adm.rsa_key)
+        chave_eleitor = RSA.import_key(get_msg(conn, addr))
         if s_adm.verify(text, text_s, chave_eleitor):
             adm.apply(dados[0].decode('utf-8'), dados[1].decode('utf-8'), dados[2].decode('utf-8'), dados[3].decode('utf-8'), dados[4].decode('utf-8'))
             conn.send("Aproved application.".encode(FORMAT))
@@ -40,43 +36,16 @@ def handle_client(conn, addr, adm):
     else:
         conn.send("Voter not authenticated.".encode(FORMAT))
 
-def get_nonce(conn, addr):
-    connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            nonce = conn.recv(msg_length)
-            return nonce
-        
-def get_cipher(conn, addr):
-    connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            cipher = conn.recv(msg_length)
-            return cipher
-            
 
-def get_enc_aes(conn, addr):
+def get_msg(conn, addr):
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT)
         if msg_length:
             msg_length = int(msg_length)
-            enc_aes = conn.recv(msg_length)
-            return enc_aes
+            msg = conn.recv(msg_length)
+            return msg
         
-def get_key(conn, addr):
-    connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            key = conn.recv(msg_length)
-            return key
-
 class server_adm():
     def __init__(self, adm):
         self.adm = adm
@@ -94,4 +63,3 @@ class server_adm():
                 print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 2}")
         finally:
             print("[SERVER CLOSED]")
-
