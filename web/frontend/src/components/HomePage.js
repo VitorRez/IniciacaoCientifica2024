@@ -44,7 +44,7 @@ export default class HomePage extends Component {
     }
 
     handleAccessButtonPressed() {
-        /*const requestOptions = {
+        const requestOptions = {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
@@ -52,8 +52,10 @@ export default class HomePage extends Component {
                 cpf: this.state.cpf,
                 electionid: this.state.electionid,
             }),
-        };*/
-        console.log(this.state)
+        };
+        fetch("/backend/homepage", requestOptions)
+            .then((response) => response.json())
+            .then((data) => console.log(data));
     }
 
     render() {

@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from .models import Voter
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import VoterSerializer
+from .serializers import VoterSerializer, HomePageSerializer
 
 # Create your views here.
 
@@ -11,5 +11,31 @@ class VoterView(generics.CreateAPIView):
     queryset = Voter.objects.all()
     serializer_class = VoterSerializer
 
-        
+class HomePageView(APIView):
+    serializer_class = HomePageSerializer
 
+    def post(self, request, format=None):
+        if not self.request.session.exists(self.request.session.session_key):
+            self.request.session.create()
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            name = serializer.data.get('name')
+            cpf = serializer.data.get('cpf')
+            electionid = serializer.data.get('electionid')
+            queryset = Voter.objects.filter(cpf=cpf, electionid=electionid)
+            if queryset.exists():
+                voter = queryset[0]
+                voter.name = name
+                voter.cpf = cpf
+                voter.electionid = electionid
+                voter.save(update_fields=['name', 'cpf', 'electionid'])
+                print(voter.name, voter.cpf, voter.electionid)
+                return Response(VoterSerializer(voter).data, status=status.HTTP_200_OK)
+            else:
+                voter = Voter(name=name, cpf=cpf, electionid=electionid)
+                voter.save()
+                print(voter.name, voter.cpf, voter.electionid)
+                return Response(VoterSerializer(voter).data, status=status.HTTP_201_CREATED)
+        
+        return Response({'Bad Request': 'Invalid data...'}, status=status.HTTP_400_BAD_REQUEST)

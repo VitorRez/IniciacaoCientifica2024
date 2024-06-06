@@ -4,6 +4,10 @@ from django.db import models
 
 class Voter(models.Model):
     name = models.CharField(max_length=50)
-    cpf = models.CharField(max_length=11, unique=True)
+    cpf = models.CharField(max_length=11)
     electionid = models.CharField(max_length=3)
-    password = models.CharField(max_length=20)
+    pub_key = models.BinaryField()
+    priv_key = models.BinaryField()
+    nonce = models.BinaryField()
+    hash = models.BinaryField()
+    salt = models.BinaryField()
