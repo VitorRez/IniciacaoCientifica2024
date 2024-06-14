@@ -7,7 +7,7 @@ class VoterSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'cpf', 'electionid', 'pub_key',
                   'priv_key', 'nonce', 'hash', 'salt')
         
-class HomePageSerializer(serializers.ModelSerializer):
+class AccessPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voter
         fields = ('name', 'cpf', 'electionid')

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import VoterView, HomePageView
+from .views import VoterView, AccessPageView
 
 urlpatterns = [
-    path('homepage', HomePageView.as_view()),
+    path('accesspage', AccessPageView.as_view()),
 ]
