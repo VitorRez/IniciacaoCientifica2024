@@ -1,7 +1,6 @@
 import socket
 from crypto.ciphers import *
 from crypto.PBKDF import *
-from data_base.sql_manager import *
 from data_base.key_manager import *
 from certificates.certifying_authority import *
 from Crypto.PublicKey import RSA

@@ -1,7 +1,6 @@
 import socket
 from crypto.ciphers import *
 from crypto.sign import *
-from data_base.sql_manager import *
 from data_base.key_manager import *
 
 HEADER = 4096
