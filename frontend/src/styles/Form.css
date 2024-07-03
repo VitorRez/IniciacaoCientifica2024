@@ -34,3 +34,12 @@
   .form-button:hover {
     background-color: #0056b3;
   }
+
+  #frame{
+    margin-top: 40px;
+    margin: auto;
+    background-color: #ccc;
+    border-radius: 20px;
+    width: 600px;
+    align-content: center;
+  }
