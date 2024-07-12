@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Voter
+from .models import Voter, Election
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,32 +8,27 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
-            "first_name",
             "password"
         ]
-        extra_kwargs = {"password": {"write_only": True}}
+        #extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        print(validated_data)
-        user = User.objects.create_user(**validated_data)
-        return user
+        voters = Voter.objects.all()
+        if voters.filter(voterid=validated_data['username']).exists():
+            user = User.objects.create_user(**validated_data)
+            return user
+        else:
+            raise Exception("User is not elegible for any election.")
     
 class VoterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voter
-        fields = [
-            "id",
-            "voter",
-            "election",
-            "auth",
-            "candidate",
-            #"pub_key",
-            #"priv_key",
-            #"nonce",
-            #"hash",
-            #"salt"
-        ]
-        extra_kwargs = {"voter": {"read_only": True}}
+        fields = {
+            "user",
+            "voterid",
+            "electionid",
+        }
+
+        extra_kwargs = {"user": {"read_only": True}}
+
     
-
-

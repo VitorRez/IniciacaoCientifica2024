@@ -30,7 +30,7 @@ def create_offices(name, id, digit_num):
 
 def reg_voter(name, cpf, id):
     db = connect_to_db()
-    db.cursor().execute("INSERT INTO VOTERS VALUES (%s,%s,%s,%s,%s);", (name, cpf, id, 0, 0))
+    db.cursor().execute("INSERT INTO VOTERS VALUES (%s,%s,%s,%s);", (name, cpf, id, 0))
     db.commit()
 
 def change_voter_status(cpf, id):
@@ -58,8 +58,6 @@ def search_info(cpf, id):
     
 def reg_candidate(name, cpf, id, office, campaignId):
     db = connect_to_db()
-    db.cursor().execute("UPDATE VOTERS SET CANDIDATE = %s WHERE CPF = %s AND ID = %s;", (1, cpf, id))
-    db.commit()
     db.cursor().execute("INSERT INTO CANDIDATES VALUES (%s,%s,%s,%s);", (cpf, id, office, campaignId))
     db.commit()
 

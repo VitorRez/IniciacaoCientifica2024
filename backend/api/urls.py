@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import AuthenticateVoterView, ApplyingView
 
 urlpatterns = [
-    path("voter/", views.CreateVoterList.as_view(), name="create-voter"),
+    path("voter-authentication/", AuthenticateVoterView.as_view(), name="voter-authentication"),
+    path("apply/", ApplyingView.as_view() ,name="apply")
 ]

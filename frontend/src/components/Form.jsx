@@ -7,7 +7,6 @@ import "../styles/Form.css"
 function Form({ route, method }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [firstname, setFirstName] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -42,13 +41,6 @@ function Form({ route, method }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="CPF"
-            />
-            <input
-                className="form-input"
-                type="text"
-                value={firstname}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Name"
             />
             <input
                 className="form-input"

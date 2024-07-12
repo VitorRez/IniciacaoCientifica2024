@@ -2,11 +2,78 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
+import { jwtDecode } from "jwt-decode";
 import "../styles/Home.css"
 
+
+function isTokenExpired(token) {
+    if (!token) return true;
+    const { exp } = jwtDecode(token);
+    const now = Date.now().valueOf() / 1000;
+    return exp < now;
+}
+
+async function refreshToken() {
+    try {
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+
+        const response = await fetch('http://localhost:8000/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refresh: refreshToken }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        localStorage.setItem(ACCESS_TOKEN, data.access);
+        return data.access;
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        return null;
+    }
+}
+
+async function postData(route, data) {
+    console.log(data)
+    try {
+        let accessToken = localStorage.getItem(ACCESS_TOKEN);
+        
+        if (isTokenExpired(accessToken)) {
+            accessToken = await refreshToken();
+            if (!accessToken) {
+                throw new Error('Could not refresh token');
+            }
+        }
+
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            console.log(response)
+            alert('Invalid password.')
+            throw new Error('Network response was not ok');
+        }
+
+        const result = await response.json();
+        console.log('Success:', result);
+        alert('Voter authenticated!')
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 function Voter({ route, method }) {
-    const [voter, setVoter] = useState([])
-    const [election, setElection] = useState(0);
     const [auth, setAuth] = useState(0);
     const [candidate, setCandidate] = useState(0);
     const [password, setPassword] = useState("");
@@ -14,64 +81,14 @@ function Voter({ route, method }) {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-
-    const getVoter = () => {
-        api
-            .get("/api/voter/")
-            .then((res) => res.data)
-            .then((data) => {
-                setVoter(data);
-                console.log(data);
-            })
-            .catch((err) => alert(err));
-    }
-
-    const registerVoter = (e) => {
-        e.preventDefault();
-        api
-            .post("/api/voter/", { election, auth, candidate })
-            .then((res) => {
-                if (res.status === 201) alert("Voter created!");
-                else alert("Failed to make voter.");
-                getVoter();
-            })
-            .catch((err) => alert(err));
-    }
-
-    const registerElection = (e) => {
-        e.preventDefault();
-        api
-            .post("/api/register-election/", { election })
-            .then((res) => {
-                if (res.status === 201) alert("Voter registered!");
-                else alert("Failed to register voter.");
-                getVoter();
-            })
-            .catch((err) => alert(err));
-    }
-
     const authenticateVoter = (e) => {
         e.preventDefault();
-        api
-            .post("/api/voter-authentication/")
-            .then((res) => {
-                if (res.status === 201) alert("Voter authenticated!");
-                else alert("Failed to authenticate voter.");
-                getVoter();
-            })
-            .catch((err) => alert(err));
+        postData("http://127.0.0.1:8000/api/voter-authentication/", password)
     }
 
     const applyCandidate = (e) => {
         e.preventDefault();
-        api
-            .post("/api/apply/")
-            .then((res) => {
-                if (res.status === 201) alert("Candidate registered!");
-                else alert("Failed to register candidate.");
-                getVoter();
-            })
-            .catch((err) => alert(err));
+        postData("http://127.0.0.1:8000/api/apply/", password)
     }
 
     return (
@@ -80,31 +97,15 @@ function Voter({ route, method }) {
             <div>
                 <h2>Home page</h2>
             </div>
-            <button onClick={(e) => registerVoter}>CreateVoter</button>
-            <h2>Register in election</h2>
-            <form onSubmit={registerElection}>
-                <h4>Type Election ID:</h4>
-                <input
-                    type="int"
-                    id="election"
-                    name="Election ID"
-                    placeholder="Election ID"
-                    required
-                    onChange={(e) => setElection(e.target.value)}
-                    value={election}
-                />
-                <input type="submit" value="Submit"></input>
-            </form>
             <h2>Authenticate in election</h2>
             <form onSubmit={authenticateVoter}>
                 <h4>Password:</h4>
                 <input
                     type="password"
                     id="password"
-                    name="Password"
+                    name="password"
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    onChange={(e) => authenticateVoter(e.target.value)}
-                    value={password}
                 ></input>
                 <input type="submit" value="Submit"></input>
             </form>
