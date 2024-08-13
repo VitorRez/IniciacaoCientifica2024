@@ -17,10 +17,10 @@ def search_num_office(id):
     cursor.execute("SELECT NUM_OFFICES FROM ELECTION WHERE ID = %s;", id)
     return cursor.rowcount
 
-def create_election(num_offices):
+def create_election(id, num_offices):
     year = datetime.now().year
     db = connect_to_db()
-    db.cursor().execute("INSERT INTO ELECTION (ANO, NUM_OFFICES) VALUES (%s, %s);", (year, num_offices))
+    db.cursor().execute("INSERT INTO ELECTION (ID, ANO, NUM_OFFICES) VALUES (%s, %s, %s);", (id, year, num_offices))
     db.commit()
 
 def create_offices(name, id, digit_num):
@@ -56,9 +56,9 @@ def search_info(cpf, id):
     else:
         return False
     
-def reg_candidate(name, cpf, id, office, campaignId):
+def reg_candidate(cpf, electionid, office, campaignId):
     db = connect_to_db()
-    db.cursor().execute("INSERT INTO CANDIDATES VALUES (%s,%s,%s,%s);", (cpf, id, office, campaignId))
+    db.cursor().execute("INSERT INTO CANDIDATES VALUES (%s,%s,%s,%s);", (cpf, electionid, office, campaignId))
     db.commit()
 
 #testes

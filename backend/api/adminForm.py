@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from .models import Election
 
 class CustomUserCreationForm(forms.ModelForm):
     class Meta:
@@ -15,3 +16,5 @@ class CustomUserCreationForm(forms.ModelForm):
             user.set_password(self.cleaned_data['password'])
             user.save()
         return user
+    
+    

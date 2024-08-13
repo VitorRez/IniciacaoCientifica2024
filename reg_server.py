@@ -17,40 +17,19 @@ def handle_client(conn, addr, reg):
     chave_rsa = reg.key.export_key('PEM')
     chave_aes = get_random_bytes(16)
     e_reg = CipherHandler(chave_rsa, chave_aes)
-    connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
-            else:
-                print(f"[{addr}] {msg}")
-                dados = msg.split()
-                if dados[0] == "0":
-                    registration(conn, addr, reg, e_reg)
-                if dados[0] == "1":
-                    authentication(conn, addr, reg, e_reg)
+    enc_text = get_msg(conn, addr)
+    if enc_text != DISCONNECT_MESSAGE:
+        text = e_reg.d_protocol(enc_text, e_reg.rsa_key)
+        dados = text.split()
+        if dados[0] == b'0':
+            reg.voter_registration(dados[1].decode(FORMAT),
+                                   dados[2].decode(FORMAT),
+                                   dados[3].decode(FORMAT))
+        else:
+            reg.voter_authentication(dados[2].decode(FORMAT),
+                                     dados[3].decode(FORMAT))
 
     conn.close()
-
-def registration(conn, addr, reg, e_reg):
-    print("[THE CLIENT WILL REGISTER AS A VOTER]")
-    enc_text = get_msg(conn, addr)
-    text = e_reg.d_protocol(enc_text, e_reg.rsa_key)
-    dados = text.split()
-    reg.voter_registration(dados[0].decode('utf-8'), dados[1].decode('utf-8'), dados[2].decode('utf-8'))
-    conn.send("Voter registered.".encode(FORMAT))
-
-def authentication(conn, addr, reg, e_reg):
-    print("[THE CLIENT WILL REGISTER A PAIR OF KEYS]")
-    enc_text = get_msg(conn, addr)
-    text = e_reg.d_protocol(enc_text, e_reg.rsa_key)
-    dados = text.split()
-    key = RSA.import_key(get_msg(conn, addr))
-    reg.voter_authentication(dados[1].decode('utf-8'), dados[2].decode('utf-8'))
-    conn.send("Voter authenticated.".encode(FORMAT))
 
 def get_msg(conn, addr):
     connected = True
@@ -78,3 +57,4 @@ class server_reg():
                 print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
         finally:
             print("[SERVER CLOSED]")
+

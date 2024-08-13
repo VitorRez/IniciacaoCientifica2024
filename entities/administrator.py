@@ -10,10 +10,10 @@ class administrator():
         self.key = RSA.generate(2048)
 
     #metodo para um eleitor se candidatar
-    def apply(self, name, cpf, id, office, campaignId):
+    def apply(self, cpf, id, office, campaignId):
         x = search_voter(cpf, id)
         if not x:
             return
-        reg_candidate(name, cpf, id, office, campaignId)
+        reg_candidate(cpf, id, office, campaignId)
         
         
