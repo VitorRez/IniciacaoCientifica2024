@@ -1,0 +1,11 @@
+<form method="POST" action="{% url 'homepage' %}">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="authenticate">
+    <h4>Selecione a Eleição:</h4>
+    {{ authenticateform.authenticateElection }}
+    <h4>Senha:</h4>
+    {{ authenticateform.authenticatePassword }}
+    <br>
+    <br>
+    <button type='submit' id='form_button'>Enviar</button>
+</form>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">  
+</head>
+<body>
+    <div id='frame'>
+        <h1 id='title'>Welcome to the Homepage, {{ username }}!</h1>
+
+        {% if message %}
+            <p style="color: green;">{{ message }}</p>
+        {% endif %}
+
+        {% if error %}
+            <script>
+                alert("{{ error }}");
+            </script>
+        {% endif %}
+
+        {% if success %}
+            <script>
+                alert("{{ success }}");
+            </script>
+        {% endif %}
+
+        <div id='form'>
+            <h2>Autenticação</h2>
+            {% include "forms/authentication_form.html" %}
+        </div>
+
+        <div id='form'>
+            <h2>Lançar candidatura</h2>
+            {% include "forms/applying_form.html" %}
+        </div>
+        <br>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+</body>
+</html>
