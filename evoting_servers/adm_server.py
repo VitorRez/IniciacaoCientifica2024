@@ -78,6 +78,7 @@ class administrator_server():
 
     def get_msg(self, conn):
         connected = True
+        
         while connected:
             msg_length = conn.recv(HEADER).decode(FORMAT)
             if msg_length:
