@@ -4,9 +4,9 @@ from datetime import datetime
 def connect_to_db():
     db = mysql.connector.connect(
         host="localhost",
-        user="root",
-        passwd="3684_Deug",
-        database="sql_election",
+        user="ELECTIONAUTH",
+        password="Fr468vj#",
+        database="evoting_database",
         auth_plugin='mysql_native_password'
     )
     return db
@@ -49,7 +49,7 @@ def reg_candidate(cpf, electionid, office, campaignId):
 
 #testes
 #1 criar eleições
-#create_election(1)
+#create_election(1,2)
 #create_election(2)
 #create_election(3)
 
