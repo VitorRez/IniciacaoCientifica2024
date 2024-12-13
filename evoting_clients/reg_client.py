@@ -23,6 +23,10 @@ def send(message, client):
     client.send(send_length)
     client.send(message)
 
+def parse_message(message):
+    header, content = message.split(': ')
+    return header, content
+
 def registering(name, cpf, electionid):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(ADDR)
@@ -38,7 +42,8 @@ def registering(name, cpf, electionid):
     enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
     send(enc_data, client)
 
-    print(client.recv(HEADER).decode('utf-8'))
+    msg = client.recv(HEADER).decode('utf-8')
+    return parse_message(msg)
 
 def authentication(name, cpf, electionid, password):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,13 +65,6 @@ def authentication(name, cpf, electionid, password):
     send(enc_data, client)
 
     enc_cert = client.recv(HEADER)
-
-    if enc_cert != b'ERROR':
-        certificate = decrypt_hybrid(enc_cert, keys['private_key'])
-
-        enc_key, salt = store_private_key(keys['private_key'], password)
-
-        return certificate, enc_key, salt 
-
-    else:
-        print('There was an error while authenticating this voter.')
+    certificate = decrypt_hybrid(enc_cert, keys['private_key'])
+    enc_key, salt = store_private_key(keys['private_key'], password)
+    return certificate, enc_key, salt 

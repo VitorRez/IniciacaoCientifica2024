@@ -33,29 +33,20 @@ class administrator_server():
         text = decrypt_hybrid(enc_text, priv_key).decode('utf-8')
 
         if text == 'election_setting':
-            try:
-                enc_data = self.get_msg(conn)
-                data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
-                
-                create_election(data[0], data[1])
+            enc_data = self.get_msg(conn)
+            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-                conn.send(b'Election successfully created!')
+            msg = create_election(data[0], data[1])
 
-            except:
-                conn.send(b'Election already created.')
-
+            conn.send(msg.encode('utf-8'))
 
         elif text == 'office_setting':
-            try:
-                enc_data = self.get_msg(conn)
-                data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+            enc_data = self.get_msg(conn)
+            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-                create_offices(data[0], data[1], data[2])
+            msg = create_offices(data[0], data[1], data[2])
+            conn.send(msg.encode('utf-8'))
 
-                conn.send(b'Office successfully created!')
-            
-            except:
-                conn.send(b'Office already created.')
 
         elif text == 'applying':
             pub_key_c = self.get_msg(conn)
@@ -69,12 +60,12 @@ class administrator_server():
             if verify(pub_key_c, pickled_data, signed_data):
                 data = pickle.loads(pickled_data)
 
-                reg_candidate(data[0], data[1], data[2], data[3])
+                msg = reg_candidate(data[0], data[1], data[2], data[3])
 
-                conn.send(b'Valid signature!')
+                conn.send(msg.encode('utf-8'))
 
             else:
-                conn.send(b'Invalid signature!')
+                conn.send(b'error: Invalid signature!')
 
     def get_msg(self, conn):
         connected = True

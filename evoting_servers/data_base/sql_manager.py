@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector import Error, IntegrityError
 from datetime import datetime
 
 def connect_to_db():
@@ -14,38 +15,128 @@ def connect_to_db():
 def search_num_office(id):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
-    cursor.execute("SELECT NUM_OFFICES FROM ELECTION WHERE ELECTIONID = %s;", id)
-    return cursor.rowcount
+    try:
+        cursor.execute("SELECT NUM_OFFICES FROM ELECTION WHERE ELECTIONID = %s;", (id,))
+        result = cursor.fetchone()
+        return result[0] if result else 0
+    finally:
+        cursor.close()
+        db.close()
 
-def create_election(id, num_offices):
-    year = datetime.now().year
-    db = connect_to_db()
-    db.cursor().execute("INSERT INTO ELECTION (ELECTIONID, YEAR, NUM_OFFICES) VALUES (%s, %s, %s);", (id, year, num_offices))
-    db.commit()
 
-def create_offices(name, id, digit_num):
+def search_digit_num(id, name):
     db = connect_to_db()
-    db.cursor().execute("INSERT INTO OFFICES (NAME, ELECTIONID, DIGIT_NUM) VALUES (%s,%s,%s);", (name, id, digit_num))
-    db.commit()
-
-def reg_voter(name, cpf, id):
-    db = connect_to_db()
-    db.cursor().execute("INSERT INTO VOTERS (NAME, CPF, ELECTIONID) VALUES (%s,%s,%s);", (name, cpf, id))
-    db.commit()
+    cursor = db.cursor(buffered=True)
+    try:
+        cursor.execute("SELECT DIGIT_NUM FROM OFFICES WHERE ELECTIONID = %s AND NAME = %s;", (id, name))
+        result = cursor.fetchone()
+        return result if result else None
+    finally:
+        cursor.close()
+        db.close()
 
 def search_voter(cpf, id):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
-    cursor.execute("SELECT * FROM VOTERS WHERE CPF = %s AND ELECTIONID = %s;", (cpf, id))
-    if cursor.rowcount > 0:
-        return True
-    else:
-        return False
+    try:
+        cursor.execute("SELECT * FROM VOTERS WHERE CPF = %s AND ELECTIONID = %s;", (cpf, id))
+        if cursor.rowcount > 0:
+            return True
+        else:
+            return False
+    finally:
+        cursor.close()
+        db.close()
+
+    
+def create_election(id, num_offices):
+    year = datetime.now().year
+    db = connect_to_db()
+
+    try:
+        db.cursor().execute("INSERT INTO ELECTION (ELECTIONID, YEAR, NUM_OFFICES) VALUES (%s, %s, %s);", (id, year, num_offices))
+        db.commit()
+        db.close()
+        return 'Success: election successfully created!'
+    
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
+
+def create_offices(name, id, digit_num):
+    db = connect_to_db()
+
+    num_offices = search_num_office(id)
+
+    cursor = db.cursor()
+    cursor.execute("SELECT COUNT(*) FROM OFFICES WHERE ELECTIONID = %s", (id,))
+    num_registered = cursor.fetchone()[0]
+    
+    try:
+        if num_registered < num_offices:
+            db.cursor().execute("INSERT INTO OFFICES (NAME, ELECTIONID, DIGIT_NUM) VALUES (%s,%s,%s);", (name, id, digit_num))
+            db.commit()
+            db.close()
+            return 'success: office successfully created!'
+
+        else:
+            db.close()
+            return 'error: cant add more offices.'
+        
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
+
+
+
+def reg_voter(name, cpf, id):
+    db = connect_to_db()
+
+    try:
+        db.cursor().execute("INSERT INTO VOTERS (NAME, CPF, ELECTIONID) VALUES (%s,%s,%s);", (name, cpf, id))
+        db.commit()
+        db.close()
+        return 'Success: voter successfully registered!'
+    
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
+
     
 def reg_candidate(cpf, electionid, office, campaignId):
     db = connect_to_db()
-    db.cursor().execute("INSERT INTO CANDIDATES (CPF, ELECTIONID, CAMPAIGNID, OFFICE_NAME) VALUES (%s,%s,%s,%s);", (cpf, electionid, campaignId, office))
-    db.commit()
+
+    digit_num = search_digit_num(electionid, office)
+    try:
+        if len(str(campaignId)) == digit_num[0]:
+            db.cursor().execute("INSERT INTO CANDIDATES (CPF, ELECTIONID, CAMPAIGNID, OFFICE_NAME) VALUES (%s,%s,%s,%s);", (cpf, electionid, campaignId, office))
+            db.commit()
+            db.close()
+            return 'success: candidate successfully registered!'
+        
+        else:
+            db.close()
+            return f'error: length of campaign id must be of size {digit_num[0]}'
+        
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
 
 #testes
 #1 criar eleições
@@ -54,7 +145,7 @@ def reg_candidate(cpf, electionid, office, campaignId):
 #create_election(3)
 
 #2 criar cargos
-#create_offices('presidente', 1, 10)
+#create_offices('presidente', 1, 2)
 #create_offices('presidente', 2, 1)
 #create_offices('vice presidente', 2, 2)
 #create_offices('presidente', 3, 2)

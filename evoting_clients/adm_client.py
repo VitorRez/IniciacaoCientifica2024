@@ -22,6 +22,10 @@ def send(message, client):
     client.send(send_length)
     client.send(message)
 
+def parse_message(message):
+    header, content = message.split(': ')
+    return header, content
+
 def electionSetting(electionid, num_offices):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(ADDR)
@@ -38,7 +42,8 @@ def electionSetting(electionid, num_offices):
     enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
     send(enc_data, client)
 
-    print(client.recv(HEADER).decode('utf-8'))
+    msg = client.recv(HEADER).decode('utf-8')
+    return parse_message(msg)
 
 def officeSetting(office_name, electionid, digit_num):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,7 +61,8 @@ def officeSetting(office_name, electionid, digit_num):
     enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
     send(enc_data, client)
 
-    print(client.recv(HEADER).decode('utf-8'))
+    msg = client.recv(HEADER).decode('utf-8')
+    return parse_message(msg)
 
 def applying(cpf, electionid, campaignid, office_name, priv_key, pub_key):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,5 +86,6 @@ def applying(cpf, electionid, campaignid, office_name, priv_key, pub_key):
     send(enc_signed_data, client)
     send(enc_data, client)
     
-    print(client.recv(HEADER).decode('utf-8'))
+    msg = client.recv(HEADER).decode('utf-8')
+    return parse_message(msg)
 

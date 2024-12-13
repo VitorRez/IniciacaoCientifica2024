@@ -36,25 +36,19 @@ class ElectionAdmin(admin.ModelAdmin):
     list_display = ('ELECTIONID', 'YEAR', 'NUM_OFFICES')
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-
-        print("Election ID:", obj.ELECTIONID)
-        print("Year:", obj.YEAR)
-        print("Number of Offices:", obj.NUM_OFFICES)
+        header, content = electionSetting(obj.ELECTIONID, obj.NUM_OFFICES)
         
-        electionSetting(obj.ELECTIONID, obj.NUM_OFFICES)
-
+        if header != 'Error':
+            super().save_model(request, obj, form, change)
+        
 class OfficeAdmin(admin.ModelAdmin):
     list_display = ('NAME', 'ELECTIONID', 'DIGIT_NUM')
 
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-
-        print("Name:", obj.NAME)
-        print("Election:", obj.ELECTIONID)
-        print("Number of digits:", obj.DIGIT_NUM)
+        header, content = officeSetting(obj.NAME, obj.ELECTIONID.ELECTIONID, obj.DIGIT_NUM)
         
-        officeSetting(obj.NAME, obj.ELECTIONID.ELECTIONID, obj.DIGIT_NUM)
+        if header != 'Error':
+            super().save_model(request, obj, form, change)
 
 class VoterAdmin(admin.ModelAdmin):
     list_display = ('NAME', 'CPF',
@@ -62,15 +56,12 @@ class VoterAdmin(admin.ModelAdmin):
                     'PRIV_KEY')
     
     def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        print('Cpf:', obj.CPF)
-        print('Election ID:', obj.ELECTIONID)
-        print('Name:', obj.NAME)
-        
-        registering(obj.NAME, obj.CPF, obj.ELECTIONID.ELECTIONID)
-        
+        header, content = registering(obj.NAME, obj.CPF, obj.ELECTIONID.ELECTIONID)
 
-
+        if header != 'Error':
+            super().save_model(request, obj, form, change)
+        
+        
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(ELECTION, ElectionAdmin)

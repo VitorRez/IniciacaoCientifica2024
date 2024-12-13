@@ -95,7 +95,6 @@ def homepage(request):
                 return render(request, 'home/homepage.html', {"success": "Voter authenticated successfully!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
             
             else:
-
                 return render(request, 'home/homepage.html', {"error": "Invalid credentials!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
 
         if request.method == 'POST' and request.POST.get('form_type') == 'apply':
@@ -107,20 +106,14 @@ def homepage(request):
             voter = VOTER.objects.get(CPF=request.user.username, ELECTIONID=electionid)
 
             if request.user.check_password(password):
+                pub_key = search_public_key(voter.PUB_KEY)
+                priv_key = search_private_key(password, voter.SALT, voter.PRIV_KEY)
 
-                try:
-                    pub_key = search_public_key(voter.PUB_KEY)
-                    priv_key = search_private_key(password, voter.SALT, voter.PRIV_KEY)
+                header, content = applying(voter.CPF, electionid, campaignid, office, priv_key, pub_key)
 
-                    applying(voter.CPF, electionid, campaignid, office, priv_key, pub_key)
-
-                    return render(request, 'home/homepage.html', {"success": "Candidacy approved!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
-
-                except:
-
-                    return render(request, 'home/homepage.html', {"error": "Voter not authenticated in this election.", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+                return render(request, 'home/homepage.html', {header: content, 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+            
             else:
-
                 return render(request, 'home/homepage.html', {"error": "Invalid credentials!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
         
         return render(request, 'home/homepage.html', {'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})

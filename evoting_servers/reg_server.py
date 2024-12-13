@@ -33,32 +33,24 @@ class registrar_server():
         text = decrypt_hybrid(enc_text, priv_key).decode('utf-8')
 
         if text == 'registering':
-            try:
-                enc_data = self.get_msg(conn)
-                data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+            enc_data = self.get_msg(conn)
+            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-                reg_voter(data[0], data[1], data[2])
+            msg = reg_voter(data[0], data[1], data[2])
 
-                conn.send(b'Voter successfully registered!')
-
-            except:
-                conn.send(b'Voter already registered.')
+            conn.send(msg.encode('utf-8'))
 
         elif text == 'authentication':
-            try:
-                enc_data = self.get_msg(conn)
-                data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
-                name, cpf, electionid, version, public_key_c = data[0], data[1], data[2], data[3], data[4]
+            enc_data = self.get_msg(conn)
+            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+            name, cpf, electionid, version, public_key_c = data[0], data[1], data[2], data[3], data[4]
 
-                req = request(version, name, public_key_c)
-                signed_req = sign(priv_key, pub_key_s, req)
-                certificate = create_digital_certificate(version, 'Registrar', name, public_key_c, 'SHA256WithNTRU', 'BR', 'MG', signed_req)
+            req = request(version, name, public_key_c)
+            signed_req = sign(priv_key, pub_key_s, req)
+            certificate = create_digital_certificate(version, 'Registrar', name, public_key_c, 'SHA256WithNTRU', 'BR', 'MG', signed_req)
 
-                enc_cert = encrypt_hybrid(certificate, import_key(public_key_c), aes_key)
-                conn.send(enc_cert)
-
-            except:
-                conn.send(b'ERROR')
+            enc_cert = encrypt_hybrid(certificate, import_key(public_key_c), aes_key)
+            conn.send(enc_cert)
 
     def get_msg(self, conn):
         connected = True
