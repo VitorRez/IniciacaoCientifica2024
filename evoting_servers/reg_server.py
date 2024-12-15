@@ -20,6 +20,17 @@ class registrar_server():
     def __init__(self):
         self.key = generate()
 
+    def send(self, message, client):
+        msg_length = len(message)
+        send_length = str(msg_length).encode(FORMAT)
+        send_length += b' ' * (HEADER - len(send_length))
+        client.send(send_length)
+        client.send(message)
+
+    def parse_message(self, message):
+        header, content = message.split(': ')
+        return header, content
+
     def handle_client(self, conn, addr):
         print(f'[NEW CONNECTION ON REGISTRAR] {addr} connected.')
 
@@ -35,8 +46,28 @@ class registrar_server():
         if text == 'registering':
             enc_data = self.get_msg(conn)
             data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+            name, cpf, electionid = data[0], data[1], data[2]
 
-            msg = reg_voter(data[0], data[1], data[2])
+            msg = reg_voter(name, cpf, electionid)
+
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((SERVER, 5053))
+
+            pub_key_t = client.recv(HEADER)
+            self.send(pub_key_s, client)
+
+            text = 'create_credential'
+            enc_text = encrypt_hybrid(text, pub_key_t, aes_key)
+            self.send(enc_text, client)
+
+            text = pickle.dumps([cpf, electionid])
+            enc_text = encrypt_hybrid(text, pub_key_t, aes_key)
+            self.send(enc_text, client)
+
+            response = self.parse_message(client.recv(HEADER).decode('utf-8'))
+            if response[0] == 'error':
+                delete_voter(cpf, electionid)
+                msg = 'error: failed to register voter!'
 
             conn.send(msg.encode('utf-8'))
 

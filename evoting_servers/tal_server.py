@@ -10,62 +10,56 @@ import socket
 import threading
 
 HEADER = 16384
-PORT = 5051
+PORT = 5053
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
-class administrator_server():
+class tallier_server():
     def __init__(self):
         self.key = generate()
 
+    def send(self, message, client):
+        msg_length = len(message)
+        send_length = str(msg_length).encode(FORMAT)
+        send_length += b' ' * (HEADER - len(send_length))
+        client.send(send_length)
+        client.send(message)
+
+    def parse_message(self, message):
+        print(message.split(': '))
+        header, content = message.split(': ')
+        return header, content
+
+    def create_random_string(self, size):
+        s = string.ascii_uppercase + string.digits
+        return ''.join(random.choices(s, k=size))
+
     def handle_client(self, conn, addr):
-        print(f'[NEW CONNECTION ON ADMINISTRATOR] {addr} connected.')
+        print(f'[NEW CONNECTION ON TALLIER] {addr} connected.')
 
         priv_key = self.key['private_key']
         pub_key_s = self.key['public_key']
         aes_key = get_random_bytes(16)
 
         conn.send(pub_key_s)
-        
+        pub_key_t = self.get_msg(conn)
+
         enc_text = self.get_msg(conn)
         text = decrypt_hybrid(enc_text, priv_key).decode('utf-8')
 
-        if text == 'election_setting':
+        if text == 'create_credential':
             enc_data = self.get_msg(conn)
             data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-            msg = create_election(data[0], data[1])
+            credential = self.create_random_string(256).encode()
+            salt = get_random_bytes(16)
+
+            msg = create_credential(data[0], data[1], credential)
+            create_salt(data[0], data[1], salt)
 
             conn.send(msg.encode('utf-8'))
-
-        elif text == 'office_setting':
-            enc_data = self.get_msg(conn)
-            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
-
-            msg = create_offices(data[0], data[1], data[2])
-            conn.send(msg.encode('utf-8'))
-
-
-        elif text == 'applying':
-            pub_key_c = self.get_msg(conn)
-
-            enc_signed_data = self.get_msg(conn)
-            enc_data = self.get_msg(conn)
-
-            signed_data = decrypt_hybrid(enc_signed_data, priv_key)
-            pickled_data = decrypt_hybrid(enc_data, priv_key)
-
-            if verify(pub_key_c, pickled_data, signed_data):
-                data = pickle.loads(pickled_data)
-
-                msg = reg_candidate(data[0], data[1], data[2], data[3])
-
-                conn.send(msg.encode('utf-8'))
-
-            else:
-                conn.send(b'error: Invalid signature!')
 
     def get_msg(self, conn):
         connected = True

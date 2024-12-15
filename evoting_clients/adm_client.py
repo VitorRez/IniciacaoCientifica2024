@@ -88,4 +88,3 @@ def applying(cpf, electionid, campaignid, office_name, priv_key, pub_key):
     
     msg = client.recv(HEADER).decode('utf-8')
     return parse_message(msg)
-

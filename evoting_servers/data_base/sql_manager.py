@@ -1,5 +1,8 @@
 import mysql.connector
+import string
+import random
 from mysql.connector import Error, IntegrityError
+from Crypto.Random import get_random_bytes
 from datetime import datetime
 
 def connect_to_db():
@@ -11,6 +14,7 @@ def connect_to_db():
         auth_plugin='mysql_native_password'
     )
     return db
+
 
 def search_num_office(id):
     db = connect_to_db()
@@ -34,6 +38,7 @@ def search_digit_num(id, name):
     finally:
         cursor.close()
         db.close()
+
 
 def search_voter(cpf, id):
     db = connect_to_db()
@@ -66,6 +71,41 @@ def create_election(id, num_offices):
         
         else:
             return f'error: integrity error: {e}'
+        
+def create_credential(electionid, cpf, credential):
+    db = connect_to_db()
+
+    try:
+        db.cursor().execute("INSERT INTO CREDENTIALS (CREDENTIAL, CPF, ELECTIONID) VALUES (%s, %s, %s);", (credential, cpf, electionid))
+        db.commit()
+        db.close()
+        return 'Success: credential successfully created!'
+    
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
+        
+def create_salt(electionid, cpf, salt):
+    db = connect_to_db()
+
+    try:
+        db.cursor().execute("INSERT INTO SALTS (CPF, ELECTIONID, SALT) VALUES (%s, %s, %s);", (cpf, electionid, salt))
+        db.commit()
+        db.close()
+        return 'Success: salt successfully created!'
+    
+    except IntegrityError as e:
+        db.close()
+        if e.errno == 1062:
+            return 'error: duplicate entry.'
+        
+        else:
+            return f'error: integrity error: {e}'
+        
 
 def create_offices(name, id, digit_num):
     db = connect_to_db()
@@ -94,8 +134,7 @@ def create_offices(name, id, digit_num):
         
         else:
             return f'error: integrity error: {e}'
-
-
+            
 
 def reg_voter(name, cpf, id):
     db = connect_to_db()
@@ -137,6 +176,26 @@ def reg_candidate(cpf, electionid, office, campaignId):
         
         else:
             return f'error: integrity error: {e}'
+        
+def delete_voter(cpf, electionid):
+    db = connect_to_db()
+
+    try:
+        cursor = db.cursor()
+        rows_affected = cursor.execute("DELETE FROM VOTERS WHERE CPF = %s AND ELECTIONID = %s;", (cpf, electionid))
+        db.commit()
+        db.close()
+
+        if rows_affected > 0:
+            return 'Success: voter successfully deleted!'
+        else:
+            return 'Error: voter not found for the specified CPF and Election ID.'
+
+    except Exception as e:
+        db.close()
+        return f'Error: {e}'
+
+
 
 #testes
 #1 criar eleições
@@ -174,4 +233,3 @@ def reg_candidate(cpf, electionid, office, campaignId):
 
 #9 busca numero de cargos por eleição
 #c = search_num_office(int(1))
-#print(c)
