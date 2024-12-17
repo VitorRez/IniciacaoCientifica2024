@@ -8,63 +8,62 @@ from crypto.PyNTRU.NTRU import *
 from random import randint
 import socket
 import datetime
+import requests
 
-HEADER = 16384
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-
-def send(message, client):
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
+SERVER_URL = "http://192.168.0.107:5001"
 
 def parse_message(message):
     header, content = message.split(': ')
     return header, content
 
 def registering(name, cpf, electionid):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    try:
+        response = requests.get(f"{SERVER_URL}/receive_pub_key")
 
-    aes_key = get_random_bytes(16)
-    pub_key_s = client.recv(HEADER)
+        if response.status_code == 200:
+            pub_key_s = base64.b64decode(response.json()['key'])
+            aes_key = get_random_bytes(16)
 
-    text = 'registering'
-    enc_text = encrypt_hybrid(text, pub_key_s, aes_key)
-    send(enc_text, client)
+            data = pickle.dumps([name, cpf, electionid])
+            enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
 
-    data = pickle.dumps([name, cpf, electionid])
-    enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
-    send(enc_data, client)
+            response = requests.post(f"{SERVER_URL}/registering", json={'message': enc_data_base64})
 
-    msg = client.recv(HEADER).decode('utf-8')
-    return parse_message(msg)
-
+            if response.status_code == 200:
+                return parse_message(response.json()['message'])
+            
+            else:
+                return parse_message(response.json()['error'])
+            
+        else:
+            return ['error', 'couldnt receive server public key.']
+                    
+    except Exception as e:
+        return ['error', e]
+    
 def authentication(name, cpf, electionid, password):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    try:
+        response = requests.get(f"{SERVER_URL}/receive_pub_key")
 
-    aes_key = get_random_bytes(16)
-    pub_key_s = client.recv(HEADER)
+        if response.status_code == 200:
+            pub_key_s = base64.b64decode(response.json()['key'])
+            aes_key = get_random_bytes(16)
 
-    text = 'authentication'
-    enc_text = encrypt_hybrid(text, pub_key_s, aes_key)
-    send(enc_text, client)
+            keys = generate()
+            public_key = export_key(keys['public_key'])
 
-    keys = generate()
-    public_key = export_key(keys['public_key'])
+            version = randint(0, 255)
+            data = pickle.dumps([name, cpf, electionid, version, public_key])
+            enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
 
-    version = randint(0, 255)
-    data = pickle.dumps([name, cpf, electionid, version, public_key])
-    enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
-    send(enc_data, client)
+            response = requests.post(f"{SERVER_URL}/authentication", json={'message': enc_data_base64})
 
-    enc_cert = client.recv(HEADER)
-    certificate = decrypt_hybrid(enc_cert, keys['private_key'])
-    enc_key, salt = store_private_key(keys['private_key'], password)
-    return certificate, enc_key, salt 
+            enc_certificate = base64.b64decode(response.json()['certificate'])
+            certificate = decrypt_hybrid(enc_certificate, keys['private_key'])
+            enc_key, salt = store_private_key(keys['private_key'], password)
+            return certificate, enc_key, salt 
+                    
+    except Exception as e:
+        return ['error', e]

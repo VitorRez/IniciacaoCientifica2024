@@ -3,7 +3,7 @@ from .keys import *
 import datetime
 
 #information signed with a certifying authority key used to verify the document
-def request(version, subject_name, subject_key):
+def make_request(version, subject_name, subject_key):
     request = f"version: {version}\nsubject name: {subject_name}\nsubject public key: {subject_key}"
     return create_hash(request)
 

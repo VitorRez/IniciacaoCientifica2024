@@ -7,84 +7,93 @@ from crypto.key_manager import *
 from crypto.PyNTRU.NTRU import *
 import socket
 import datetime
+import requests
 
-HEADER = 16384
-PORT = 5051
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-
-def send(message, client):
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
+SERVER_URL = "http://192.168.0.107:5000"
 
 def parse_message(message):
     header, content = message.split(': ')
     return header, content
 
 def electionSetting(electionid, num_offices):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    try:
+        response = requests.get(f"{SERVER_URL}/receive_pub_key")
 
-    aes_key = get_random_bytes(16)
+        if response.status_code == 200:
+            pub_key_s = base64.b64decode(response.json()['key'])
+            aes_key = get_random_bytes(16)
 
-    pub_key_s = client.recv(HEADER)
+            data = pickle.dumps([electionid, num_offices])
+            enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
+            
+            response = requests.post(f"{SERVER_URL}/election_setting", json={'message': enc_data_base64})
 
-    text = 'election_setting'
-    enc_text = encrypt_hybrid(text, pub_key_s, aes_key)
-    send(enc_text, client)
-
-    data = pickle.dumps([electionid, num_offices])
-    enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
-    send(enc_data, client)
-
-    msg = client.recv(HEADER).decode('utf-8')
-    return parse_message(msg)
-
-def officeSetting(office_name, electionid, digit_num):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
-
-    aes_key = get_random_bytes(16)
-
-    pub_key_s = client.recv(HEADER)
-
-    text = 'office_setting'
-    enc_text = encrypt_hybrid(text, pub_key_s, aes_key)
-    send(enc_text, client)
-
-    data = pickle.dumps([office_name, electionid, digit_num])
-    enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
-    send(enc_data, client)
-
-    msg = client.recv(HEADER).decode('utf-8')
-    return parse_message(msg)
-
-def applying(cpf, electionid, campaignid, office_name, priv_key, pub_key):
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
-
-    aes_key = get_random_bytes(16)
-
-    pub_key_s = client.recv(HEADER)
-
-    text = 'applying'
-    enc_text = encrypt_hybrid(text, pub_key_s, aes_key)
-    send(enc_text, client)
-
-    send(pub_key, client)
-
-    data = pickle.dumps([cpf, electionid, office_name, campaignid])
-    enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
-    signed_data = sign(priv_key, pub_key, data)
-    enc_signed_data = encrypt_hybrid(signed_data, pub_key_s, aes_key)
-
-    send(enc_signed_data, client)
-    send(enc_data, client)
+            if response.status_code == 200:
+                return parse_message(response.json()['message'])
+            
+            else:
+                return parse_message(response.json()['error'])
+            
+        else:
+            return ['error', 'couldnt receive server public key.']
+        
+    except Exception as e:
+        return ['error', e]
     
-    msg = client.recv(HEADER).decode('utf-8')
-    return parse_message(msg)
+def officeSetting(office_name, electionid, digit_num):
+    try:
+        response = requests.get(f"{SERVER_URL}/receive_pub_key")
+
+        if response.status_code == 200:
+            pub_key_s = base64.b64decode(response.json()['key'])
+            aes_key = get_random_bytes(16)
+
+            data = pickle.dumps([office_name, electionid, digit_num])
+            enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
+            
+            response = requests.post(f"{SERVER_URL}/office_setting", json={'message': enc_data_base64})
+
+            if response.status_code == 200:
+                return parse_message(response.json()['message'])
+            
+            else:
+                return parse_message(response.json()['error'])
+            
+        else:
+            return ['error', 'couldnt receive server public key.']
+    
+    except Exception as e:
+        return ['error', e]
+    
+def applying(cpf, electionid, campaignid, office_name, priv_key, pub_key):
+    try:
+        response = requests.get(f"{SERVER_URL}/receive_pub_key")
+        
+        if response.status_code == 200:
+            pub_key_s = base64.b64decode(response.json()['key'])
+            aes_key = get_random_bytes(16)
+            key_base64 = base64.b64encode(pub_key).decode('utf-8')
+
+            data = pickle.dumps([cpf, electionid, office_name, campaignid])
+            enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
+
+            signed_data = sign(priv_key, pub_key, data)
+            enc_signed_data = encrypt_hybrid(signed_data, pub_key_s, aes_key)
+            enc_signed_data_base64 = base64.b64encode(enc_signed_data).decode('utf-8')
+
+            response = requests.post(f"{SERVER_URL}/applying", json={'enc_data': enc_data_base64, 'enc_signed_data': enc_signed_data_base64, 'key': key_base64})
+
+            if response.status_code == 200:
+                return parse_message(response.json()['message'])
+            
+            else:
+                return parse_message(response.json()['error'])
+            
+        else:
+            return ['error', 'couldnt receive server public key.']
+    
+    except Exception as e:
+        return ['error', e]

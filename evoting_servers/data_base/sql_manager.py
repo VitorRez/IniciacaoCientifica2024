@@ -62,7 +62,7 @@ def create_election(id, num_offices):
         db.cursor().execute("INSERT INTO ELECTION (ELECTIONID, YEAR, NUM_OFFICES) VALUES (%s, %s, %s);", (id, year, num_offices))
         db.commit()
         db.close()
-        return 'Success: election successfully created!'
+        return 'success: election successfully created!'
     
     except IntegrityError as e:
         db.close()
@@ -79,7 +79,7 @@ def create_credential(electionid, cpf, credential):
         db.cursor().execute("INSERT INTO CREDENTIALS (CREDENTIAL, CPF, ELECTIONID) VALUES (%s, %s, %s);", (credential, cpf, electionid))
         db.commit()
         db.close()
-        return 'Success: credential successfully created!'
+        return 'success: credential successfully created!'
     
     except IntegrityError as e:
         db.close()
@@ -96,7 +96,7 @@ def create_salt(electionid, cpf, salt):
         db.cursor().execute("INSERT INTO SALTS (CPF, ELECTIONID, SALT) VALUES (%s, %s, %s);", (cpf, electionid, salt))
         db.commit()
         db.close()
-        return 'Success: salt successfully created!'
+        return 'success: salt successfully created!'
     
     except IntegrityError as e:
         db.close()
@@ -143,7 +143,7 @@ def reg_voter(name, cpf, id):
         db.cursor().execute("INSERT INTO VOTERS (NAME, CPF, ELECTIONID) VALUES (%s,%s,%s);", (name, cpf, id))
         db.commit()
         db.close()
-        return 'Success: voter successfully registered!'
+        return 'success: voter successfully registered!'
     
     except IntegrityError as e:
         db.close()
@@ -187,9 +187,9 @@ def delete_voter(cpf, electionid):
         db.close()
 
         if rows_affected > 0:
-            return 'Success: voter successfully deleted!'
+            return 'success: voter successfully deleted!'
         else:
-            return 'Error: voter not found for the specified CPF and Election ID.'
+            return 'error: voter not found for the specified CPF and Election ID.'
 
     except Exception as e:
         db.close()

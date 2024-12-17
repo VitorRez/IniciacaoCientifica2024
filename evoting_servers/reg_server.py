@@ -6,103 +6,78 @@ from crypto.encrypt_hybrid import *
 from crypto.key_manager import *
 from crypto.PyNTRU.NTRU import *
 from data_base.sql_manager import *
-import socket
-import threading
+from flask import Flask, request, jsonify
+import base64
+import requests
 
-HEADER = 16384
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+app = Flask(__name__)
 
-class registrar_server():
-    def __init__(self):
-        self.key = generate()
+keys = generate()
 
-    def send(self, message, client):
-        msg_length = len(message)
-        send_length = str(msg_length).encode(FORMAT)
-        send_length += b' ' * (HEADER - len(send_length))
-        client.send(send_length)
-        client.send(message)
+priv_key = keys['private_key']
+pub_key = keys['public_key']
+aes_key = get_random_bytes(16)
 
-    def parse_message(self, message):
-        header, content = message.split(': ')
-        return header, content
+def parse_message(message):
+    header, content = message.split(': ')
+    return header, content
 
-    def handle_client(self, conn, addr):
-        print(f'[NEW CONNECTION ON REGISTRAR] {addr} connected.')
+@app.route('/receive_pub_key', methods=['GET'])
+def receive_pub_key():
+    pub_key_base64 = base64.b64encode(pub_key).decode('utf-8')
+    return jsonify({'success': True, 'key': pub_key_base64}), 200
 
-        priv_key = self.key['private_key']
-        pub_key_s = self.key['public_key']
-        aes_key = get_random_bytes(16)
+@app.route('/registering', methods=['POST'])
+def registering():
+    enc_data = base64.b64decode(request.json['message'])
+    data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-        conn.send(pub_key_s)
+    result = reg_voter(data[0], data[1], data[2])
+    header, message = parse_message(result)
 
-        enc_text = self.get_msg(conn)
-        text = decrypt_hybrid(enc_text, priv_key).decode('utf-8')
+    if header == 'success':
+        return jsonify({'message': result}), 200
+    
+    else:
+        return jsonify({'error': result}), 400
+    
+@app.route('/authentication', methods=['POST'])
+def authentication():
+    enc_data = base64.b64decode(request.json['message'])
+    data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+    name, cpf, electionid, version, public_key_c = data[0], data[1], data[2], data[3], data[4]
 
-        if text == 'registering':
-            enc_data = self.get_msg(conn)
-            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
-            name, cpf, electionid = data[0], data[1], data[2]
+    req = make_request(version, name, public_key_c)
+    signed_req = sign(priv_key, pub_key, req)
+    certificate = create_digital_certificate(version, 'Registrar', name, public_key_c, 'SHA256WithNTRU', 'BR', 'MG', signed_req)
+    
+    enc_cert = encrypt_hybrid(certificate, import_key(public_key_c), aes_key)
+    enc_cert_base64 = base64.b64encode(enc_cert).decode('utf-8')
 
-            msg = reg_voter(name, cpf, electionid)
+    TAL_URL = "http://192.168.0.107:5003"
 
-            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect((SERVER, 5053))
+    try:
+        response = requests.get(f"{TAL_URL}/receive_pub_key")
 
-            pub_key_t = client.recv(HEADER)
-            self.send(pub_key_s, client)
+        if response.status_code == 200:
+            pub_key_t = base64.b64decode(response.json()['key'])
 
-            text = 'create_credential'
-            enc_text = encrypt_hybrid(text, pub_key_t, aes_key)
-            self.send(enc_text, client)
+            data = pickle.dumps([cpf, electionid])
+            enc_data = encrypt_hybrid(data, pub_key_t, aes_key)
+            enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
 
-            text = pickle.dumps([cpf, electionid])
-            enc_text = encrypt_hybrid(text, pub_key_t, aes_key)
-            self.send(enc_text, client)
+            response = requests.post(f"{TAL_URL}/create_credential", json={'message': enc_data_base64})
 
-            response = self.parse_message(client.recv(HEADER).decode('utf-8'))
-            if response[0] == 'error':
-                delete_voter(cpf, electionid)
-                msg = 'error: failed to register voter!'
-
-            conn.send(msg.encode('utf-8'))
-
-        elif text == 'authentication':
-            enc_data = self.get_msg(conn)
-            data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
-            name, cpf, electionid, version, public_key_c = data[0], data[1], data[2], data[3], data[4]
-
-            req = request(version, name, public_key_c)
-            signed_req = sign(priv_key, pub_key_s, req)
-            certificate = create_digital_certificate(version, 'Registrar', name, public_key_c, 'SHA256WithNTRU', 'BR', 'MG', signed_req)
-
-            enc_cert = encrypt_hybrid(certificate, import_key(public_key_c), aes_key)
-            conn.send(enc_cert)
-
-    def get_msg(self, conn):
-        connected = True
-        while connected:
-            msg_length = conn.recv(HEADER).decode(FORMAT)
-            if msg_length:
-                msg_length = int(msg_length)
-                msg = conn.recv(msg_length)
-                return msg
+            if response.status_code == 200:
+                return jsonify({'success': True, 'certificate': enc_cert_base64})
             
-    def start(self):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind(ADDR)
-        server.listen()
-        print(f'[LISTENING] Server is listening on {SERVER}')
-        try:
-            while True:
-                conn, addr = server.accept()
-                thread = threading.Thread(target=self.handle_client, args=(conn, addr))
-                thread.start()
-                print(f'[ACTIVE CONNECTIONS] {threading.active_count()}')
-        finally:
-            print('[SERVER CLOSED]')
+            else:
+                return parse_message(response.json()['error'])
+            
+        else:
+            return ['error', 'couldnt receive server public key.']
+        
+    except Exception as e:
+        return ['error', e]
+
+app.run(host='0.0.0.0', port=5001)
