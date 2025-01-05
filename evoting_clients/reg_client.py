@@ -10,7 +10,7 @@ import socket
 import datetime
 import requests
 
-SERVER_URL = "http://192.168.0.107:5001"
+SERVER_URL = "http://192.168.68.104:5001"
 
 def parse_message(message):
     header, content = message.split(': ')
@@ -60,10 +60,16 @@ def authentication(name, cpf, electionid, password):
 
             response = requests.post(f"{SERVER_URL}/authentication", json={'message': enc_data_base64})
 
-            enc_certificate = base64.b64decode(response.json()['certificate'])
-            certificate = decrypt_hybrid(enc_certificate, keys['private_key'])
-            enc_key, salt = store_private_key(keys['private_key'], password)
-            return certificate, enc_key, salt 
+            if response.status_code == 200:
+                enc_certificate = base64.b64decode(response.json()['certificate'])
+                certificate = decrypt_hybrid(enc_certificate, keys['private_key'])
+                enc_key, salt = store_private_key(keys['private_key'], password)
+
+                return ['success', certificate, enc_key, salt]
+            
+            else:
+                print(response.json())
+                return ['error', response.json()['error']]
                     
     except Exception as e:
         return ['error', e]

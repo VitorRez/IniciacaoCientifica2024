@@ -75,53 +75,45 @@
           overflow-y: auto;
         }
 
-        .cards-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 1rem;
         }
 
-        .card {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            width: 250px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        table th, table td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        table th {
+          background-color: #f4f4f4;
         }
 
-        .card h3 {
-            margin: 0 0 0.5rem 0;
-            color: #007bff;
+        .filter-container {
+          margin-bottom: 1rem;
         }
 
-        .card p {
-            margin: 0.5rem 0;
-            color: #333;
+        .filter-container input {
+          padding: 0.5rem;
+          font-size: 1rem;
+          width: 200px;
+          margin-right: 1rem;
         }
 
-        .status-circle {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-left: 5px;
+        .filter-container button {
+          padding: 0.5rem 1rem;
+          font-size: 1rem;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          cursor: pointer;
         }
 
-        .status-circle.green {
-            background-color: green;
+        .filter-container button:hover {
+          background-color: #0056b3;
         }
-
-        .status-circle.red {
-            background-color: red;
-        }
-
       </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
@@ -129,12 +121,12 @@
     <div class="header">
       <h1 class="title">Homepage</h1>
       <div class="user-info">
-        <h3 class="name">{{ username }}</h2>
+        <h3 class="name">{{ username }}</h3>
       </div>
     </div>
     <div class="main-container">
       <div class="sidebar">
-        <button onclick="window.location.href='{% url 'homepage' %}'"">Homepage</button>
+        <button onclick="window.location.href='{% url 'homepage' %}'">Homepage</button>
         <button onclick="window.location.href='{% url 'authenticate' %}'">Authenticate</button>
         <button onclick="window.location.href='{% url 'apply' %}'">Apply for an office</button>
         <button>See commits</button>
@@ -145,23 +137,45 @@
         <h2>Informações</h2>
         <h3>Name: {{username}}</h3>
         <h4>CPF: {{cpf}}</h4>
-        <div class="cards-container">
-            {% for card in cards %}
-            <div class="card">
-                <h3>{{ election.ELECTIONID }}</h3>
-                <p><strong>Election: </strong>{{card.electionid}}</p>
-                <p><strong>Date: </strong>{{card.end_setting}}</p>
-                <p><strong>Is authenticated?: </strong>
-                    <span class="status-circle {% if card.auth == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-                <p><strong>Is candidate?: </strong>
-                    <span class="status-circle {% if card.candidate == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-                <button>See commits</button>
-            </div>
-            {% endfor %}
+
+        <div class="filter-container">
+          <input type="text" id="filter-electionid" placeholder="Filter by election ID">
+          <button onclick="filterTable()">Filter</button>
         </div>
+
+        <table id="credentials-table">
+          <thead>
+            <tr>
+              <th>Election ID</th>
+              <th>Credential + Salt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for commit in commits %}
+            <tr>
+              <td>{{ commit.electionid }}</td>
+              <td>{{ commit.credential }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
+
+    <script>
+        function filterTable() {
+            const filterValue = document.getElementById('filter-electionid').value.toLowerCase();
+            const rows = document.querySelectorAll('#credentials-table tbody tr');
+
+            rows.forEach(row => {
+                const electionID = row.children[0].textContent.toLowerCase();
+                if (electionID.includes(filterValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

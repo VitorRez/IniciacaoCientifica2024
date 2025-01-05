@@ -38,8 +38,7 @@ def createCredential():
     credential = create_random_string(256).encode()
     salt = get_random_bytes(16)
 
-    result = create_credential(data[0], data[1], credential)
-    create_salt(data[0], data[1], salt)
+    result = create_credential(data[0], credential, salt)
     header, message = parse_message(result)
 
     if header == 'success':
@@ -47,6 +46,20 @@ def createCredential():
     
     else:
         return jsonify({'error': result}), 400
+    
+@app.route('/get_gommits', methods=['POST'])
+def get_commits():
+    pub_key_c = base64.b64decode(request.json['key'])
+    enc_data = base64.b64decode(request.json['data'])
+
+    electionids = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+
+    commits = create_commit(electionids)
+
+    enc_data = encrypt_hybrid(pickle.dumps(commits), pub_key_c, aes_key)
+    enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
+
+    return jsonify({'success': True, 'commits': enc_data_base64})
     
 app.run(host='0.0.0.0', port=5003)
 

@@ -54,30 +54,38 @@ def authentication():
     enc_cert = encrypt_hybrid(certificate, import_key(public_key_c), aes_key)
     enc_cert_base64 = base64.b64encode(enc_cert).decode('utf-8')
 
-    TAL_URL = "http://192.168.0.107:5003"
+    TAL_URL = "http://192.168.68.104:5003"
 
     try:
         response = requests.get(f"{TAL_URL}/receive_pub_key")
+        print(1)
 
         if response.status_code == 200:
             pub_key_t = base64.b64decode(response.json()['key'])
+            print(2)
 
-            data = pickle.dumps([cpf, electionid])
+            data = pickle.dumps([electionid])
             enc_data = encrypt_hybrid(data, pub_key_t, aes_key)
             enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
+            print(3)
 
             response = requests.post(f"{TAL_URL}/create_credential", json={'message': enc_data_base64})
+            print(4)
 
             if response.status_code == 200:
-                return jsonify({'success': True, 'certificate': enc_cert_base64})
+                print(5.1)
+                return jsonify({'success': True, 'certificate': enc_cert_base64}), 200
             
             else:
-                return parse_message(response.json()['error'])
+                print(5.2)
+                return jsonify({'error': 'Couldnt generate certificate.'}), 400
             
         else:
-            return ['error', 'couldnt receive server public key.']
+            print(5.3)
+            return jsonify({'error': 'Couldnt access tallier server.'}), 400
         
     except Exception as e:
-        return ['error', e]
+        print(5.4)
+        return jsonify({'error': e}), 400
 
 app.run(host='0.0.0.0', port=5001)

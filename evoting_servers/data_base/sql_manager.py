@@ -3,7 +3,10 @@ import string
 import random
 from mysql.connector import Error, IntegrityError
 from Crypto.Random import get_random_bytes
+from crypto.CryptoUtils.hash import *
 from datetime import datetime
+from django.utils.timezone import make_aware
+from pytz import timezone
 
 def connect_to_db():
     db = mysql.connector.connect(
@@ -16,11 +19,11 @@ def connect_to_db():
     return db
 
 
-def search_num_office(id):
+def search_num_office(electionid):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
     try:
-        cursor.execute("SELECT NUM_OFFICES FROM ELECTION WHERE ELECTIONID = %s;", (id,))
+        cursor.execute("SELECT NUM_OFFICES FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
         result = cursor.fetchone()
         return result[0] if result else 0
     finally:
@@ -28,11 +31,35 @@ def search_num_office(id):
         db.close()
 
 
-def search_digit_num(id, name):
+def search_end_setting(electionid):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
     try:
-        cursor.execute("SELECT DIGIT_NUM FROM OFFICES WHERE ELECTIONID = %s AND NAME = %s;", (id, name))
+        cursor.execute("SELECT END_SETTING FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
+        result = cursor.fetchone()
+        return result[0] if result else 0
+    finally:
+        cursor.close()
+        db.close()
+
+
+def search_end_election(electionid):
+    db = connect_to_db()
+    cursor = db.cursor(buffered=True)
+    try:
+        cursor.execture("SELECT END_ELECTION FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
+        result = cursor.fetchone()
+        return result[0] if result else 0
+    finally:
+        cursor.close()
+        db.close()
+
+
+def search_digit_num(electionid, name):
+    db = connect_to_db()
+    cursor = db.cursor(buffered=True)
+    try:
+        cursor.execute("SELECT DIGIT_NUM FROM OFFICES WHERE ELECTIONID = %s AND NAME = %s;", (electionid, name))
         result = cursor.fetchone()
         return result if result else None
     finally:
@@ -40,11 +67,11 @@ def search_digit_num(id, name):
         db.close()
 
 
-def search_voter(cpf, id):
+def search_voter(cpf, electionid):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
     try:
-        cursor.execute("SELECT * FROM VOTERS WHERE CPF = %s AND ELECTIONID = %s;", (cpf, id))
+        cursor.execute("SELECT * FROM VOTERS WHERE CPF = %s AND ELECTIONID = %s;", (cpf, electionid))
         if cursor.rowcount > 0:
             return True
         else:
@@ -52,14 +79,22 @@ def search_voter(cpf, id):
     finally:
         cursor.close()
         db.close()
-
+        
     
-def create_election(id, num_offices):
+def create_election(electionid, num_offices, end_setting, end_election):
     year = datetime.now().year
     db = connect_to_db()
 
+    current_time = make_aware(datetime.now(), timezone=timezone('America/Sao_Paulo'))
+
+    print(current_time)
+    print(end_setting)
+
+    if current_time > end_setting:
+        return 'error: cant register anymore election.'
+
     try:
-        db.cursor().execute("INSERT INTO ELECTION (ELECTIONID, YEAR, NUM_OFFICES) VALUES (%s, %s, %s);", (id, year, num_offices))
+        db.cursor().execute("INSERT INTO ELECTION (ELECTIONID, YEAR, NUM_OFFICES, END_SETTING, END_ELECTION) VALUES (%s, %s, %s, %s, %s);", (electionid, year, num_offices, end_setting, end_election))
         db.commit()
         db.close()
         return 'success: election successfully created!'
@@ -72,11 +107,11 @@ def create_election(id, num_offices):
         else:
             return f'error: integrity error: {e}'
         
-def create_credential(electionid, cpf, credential):
+def create_credential(electionid, credential, salt):
     db = connect_to_db()
 
     try:
-        db.cursor().execute("INSERT INTO CREDENTIALS (CREDENTIAL, CPF, ELECTIONID) VALUES (%s, %s, %s);", (credential, cpf, electionid))
+        db.cursor().execute("INSERT INTO CREDENTIALS (CREDENTIAL, ELECTIONID, SALT) VALUES (%s, %s, %s);", (credential, electionid, salt))
         db.commit()
         db.close()
         return 'success: credential successfully created!'
@@ -89,36 +124,29 @@ def create_credential(electionid, cpf, credential):
         else:
             return f'error: integrity error: {e}'
         
-def create_salt(electionid, cpf, salt):
+
+def create_offices(name, electionid, digit_num):
     db = connect_to_db()
 
-    try:
-        db.cursor().execute("INSERT INTO SALTS (CPF, ELECTIONID, SALT) VALUES (%s, %s, %s);", (cpf, electionid, salt))
-        db.commit()
-        db.close()
-        return 'success: salt successfully created!'
-    
-    except IntegrityError as e:
-        db.close()
-        if e.errno == 1062:
-            return 'error: duplicate entry.'
-        
-        else:
-            return f'error: integrity error: {e}'
-        
+    end_setting = search_end_setting(electionid)
 
-def create_offices(name, id, digit_num):
-    db = connect_to_db()
+    current_time = datetime.now()
 
-    num_offices = search_num_office(id)
+    print(current_time)
+    print(end_setting)
+
+    if current_time > end_setting:
+        return 'error: cant register anymore election.'
+
+    num_offices = search_num_office(electionid)
 
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM OFFICES WHERE ELECTIONID = %s", (id,))
+    cursor.execute("SELECT COUNT(*) FROM OFFICES WHERE ELECTIONID = %s", (electionid,))
     num_registered = cursor.fetchone()[0]
     
     try:
         if num_registered < num_offices:
-            db.cursor().execute("INSERT INTO OFFICES (NAME, ELECTIONID, DIGIT_NUM) VALUES (%s,%s,%s);", (name, id, digit_num))
+            db.cursor().execute("INSERT INTO OFFICES (NAME, ELECTIONID, DIGIT_NUM) VALUES (%s,%s,%s);", (name, electionid, digit_num))
             db.commit()
             db.close()
             return 'success: office successfully created!'
@@ -136,11 +164,21 @@ def create_offices(name, id, digit_num):
             return f'error: integrity error: {e}'
             
 
-def reg_voter(name, cpf, id):
+def reg_voter(name, cpf, electionid):
     db = connect_to_db()
 
+    end_setting = search_end_setting(electionid)
+
+    current_time = datetime.now()
+
+    print(current_time)
+    print(end_setting)
+
+    if current_time > end_setting:
+        return 'error: cant register anymore election.'
+
     try:
-        db.cursor().execute("INSERT INTO VOTERS (NAME, CPF, ELECTIONID) VALUES (%s,%s,%s);", (name, cpf, id))
+        db.cursor().execute("INSERT INTO VOTERS (NAME, CPF, ELECTIONID) VALUES (%s,%s,%s);", (name, cpf, electionid))
         db.commit()
         db.close()
         return 'success: voter successfully registered!'
@@ -152,10 +190,21 @@ def reg_voter(name, cpf, id):
         
         else:
             return f'error: integrity error: {e}'
+        
 
     
 def reg_candidate(cpf, electionid, office, campaignId):
     db = connect_to_db()
+
+    end_setting = search_end_setting(electionid)
+
+    current_time = datetime.now()
+
+    print(current_time)
+    print(end_setting)
+
+    if current_time > end_setting:
+        return 'error: cant register anymore election.'
 
     digit_num = search_digit_num(electionid, office)
     try:
@@ -177,6 +226,7 @@ def reg_candidate(cpf, electionid, office, campaignId):
         else:
             return f'error: integrity error: {e}'
         
+        
 def delete_voter(cpf, electionid):
     db = connect_to_db()
 
@@ -193,8 +243,46 @@ def delete_voter(cpf, electionid):
 
     except Exception as e:
         db.close()
-        return f'Error: {e}'
+        return f'error: {e}'
 
+def create_commit(electionids):
+    db = connect_to_db()
+    current_time = datetime.now(timezone('America/Sao_Paulo'))
+
+    try:
+        cursor = db.cursor()
+
+        format_ids = ', '.join(['%s'] * len(electionids))
+
+        query = f"""
+        SELECT
+            CREDENTIALS.CREDENTIAL,
+            CREDENTIALS.SALT,
+            CREDENTIALS.ELECTIONID
+        FROM
+            CREDENTIALS
+        INNER JOIN
+            ELECTION
+        ON 
+            CREDENTIALS.ELECTIONID = ELECTION.ELECTIONID
+        WHERE
+            CREDENTIALS.ELECTIONID IN ({format_ids})
+            AND {current_time} BETWEEN ELECTION.END_SETTING AND ELECTION.END_ELECTION;
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        db.close()
+        
+        commits = []
+        for cred, salt, electionid in rows:
+            commit = create_hash((cred + salt))
+            commits.append([commit, electionid])
+
+        return commits
+    
+    except Exception as e:
+        db.close()
+        return f'error: {e}'
 
 
 #testes

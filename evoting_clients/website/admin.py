@@ -33,12 +33,13 @@ class CustomUserAdmin(UserAdmin):
     )
 
 class ElectionAdmin(admin.ModelAdmin):
-    list_display = ('ELECTIONID', 'YEAR', 'NUM_OFFICES')
+    list_display = ('ELECTIONID', 'YEAR', 'NUM_OFFICES', 'END_SETTING', 'END_ELECTION')
 
     def save_model(self, request, obj, form, change):
-        header, content = electionSetting(obj.ELECTIONID, obj.NUM_OFFICES)
+        header, content = electionSetting(obj.ELECTIONID, obj.NUM_OFFICES, obj.END_SETTING, obj.END_ELECTION)
+        print(header, content)
         
-        if header != 'Error':
+        if header != 'error':
             super().save_model(request, obj, form, change)
         
 class OfficeAdmin(admin.ModelAdmin):
@@ -47,7 +48,7 @@ class OfficeAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         header, content = officeSetting(obj.NAME, obj.ELECTIONID.ELECTIONID, obj.DIGIT_NUM)
         
-        if header != 'Error':
+        if header != 'error':
             super().save_model(request, obj, form, change)
 
 class VoterAdmin(admin.ModelAdmin):
@@ -58,7 +59,7 @@ class VoterAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         header, content = registering(obj.NAME, obj.CPF, obj.ELECTIONID.ELECTIONID)
 
-        if header != 'Error':
+        if header != 'error':
             super().save_model(request, obj, form, change)
         
         

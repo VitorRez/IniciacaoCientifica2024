@@ -72,11 +72,36 @@ def homepage(request):
         try:
             access_token = AccessToken(request.session['access'])
 
-            voter = VOTER.objects.filter(CPF=request.user.username).first()
-            form = authenticateForm(user=request.user)
-            form1 = applyingForm(user=request.user)
+            voters = VOTER.objects.filter(CPF=request.user.username)
+            name, cpf = voters.first().NAME, voters.first().CPF
+            cards = [{
+                    'electionid': voter.ELECTIONID.ELECTIONID,
+                    'end_setting': voter.ELECTIONID.END_SETTING,
+                    'auth': voter.AUTH,
+                    'candidate': voter.CANDIDATE,
+                }
 
-            if request.method == 'POST' and request.POST.get('form_type') == 'authenticate':
+                for voter in voters
+            ]
+            print(cards)
+
+            return render(request, 'home/homepage.html', {'username':name, 'cpf':cpf, 'cards':cards})
+        
+        except (TokenError, InvalidToken):
+            return redirect('login')
+    
+    return redirect('login')
+
+def authentication_page(request):
+    if 'access' in request.session:
+        try:
+            access_token = AccessToken(request.session['access'])
+
+            voter = VOTER.objects.filter(CPF=request.user.username).first()
+
+            form = authenticateForm(user=request.user)
+
+            if request.method == 'POST':
                 electionid = request.POST.get('authenticateElection')
                 password = request.POST.get('authenticatePassword')
 
@@ -84,19 +109,44 @@ def homepage(request):
 
                     voter = VOTER.objects.get(CPF=request.user.username, ELECTIONID=electionid)
 
-                    cert, enc_key, salt = authentication(voter.NAME, voter.CPF, voter.ELECTIONID.ELECTIONID, password)
+                    if voter.AUTH == 1:
+                        return render(request, 'home/authenticate.html', {"error": "voter already authenticated", "authenticateform": form, "cpf": voter.CPF, "username":voter.NAME})
 
-                    voter.PUB_KEY = cert.decode('utf-8')
-                    voter.PRIV_KEY = enc_key
-                    voter.SALT = salt
-                    voter.save()
+                    data = authentication(voter.NAME, voter.CPF, voter.ELECTIONID.ELECTIONID, password)
 
-                    return render(request, 'home/homepage.html', {"success": "Voter authenticated successfully!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
-                
+                    if data[0] == 'success':
+                        cert, enc_key, salt = data[1], data[2], data[3]
+
+                        voter.PUB_KEY = cert.decode('utf-8')
+                        voter.PRIV_KEY = enc_key
+                        voter.SALT = salt
+                        voter.AUTH = 1
+                        voter.save()
+
+                        return render(request, 'home/authenticate.html', {"success": "Voter authenticated successfully!", "authenticateform": form, "cpf": voter.CPF, "username":voter.NAME})
+                    
+                    else:
+                        return render(request, 'home/authenticate.html', {"error": data[1], "authenticateform": form, "cpf": voter.CPF, "username":voter.NAME})
+                    
                 else:
-                    return render(request, 'home/homepage.html', {"error": "Invalid credentials!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+                    return render(request, 'home/authenticate.html', {"error": data[1], "authenticateform": form, "cpf": voter.CPF, "username":voter.NAME})
+                
+            return render(request, 'home/authenticate.html', {"authenticateform": form, "cpf": voter.CPF, "username":voter.NAME})
 
-            if request.method == 'POST' and request.POST.get('form_type') == 'apply':
+        except (TokenError, InvalidToken):
+            return redirect('login') 
+   
+    return redirect('login')
+
+def applying_page(request):
+    if 'access' in request.session:
+        try:
+            access_token = AccessToken(request.session['access'])
+            
+            voter = VOTER.objects.filter(CPF=request.user.username).first()
+            form = applyingForm(user=request.user)
+
+            if request.method == 'POST':
                 electionid = request.POST.get('applyElection')
                 office = request.POST.get('office')
                 campaignid = request.POST.get('campaignId')
@@ -110,17 +160,21 @@ def homepage(request):
 
                     header, content = applying(voter.CPF, electionid, campaignid, office, priv_key, pub_key)
 
-                    return render(request, 'home/homepage.html', {header: content, 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+                    voter.CANDIDATE = 1
+                    voter.save()
+
+                    return render(request, 'home/apply.html', {header: content, 'applyingform': form, 'username': voter.NAME, 'cpf': voter.CPF})
                 
                 else:
-                    return render(request, 'home/homepage.html', {"error": "Invalid credentials!", 'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+                    return render(request, 'home/apply.html', {'error': 'Invalid credentials!', 'applyingform': form, 'username': voter.NAME, 'cpf': voter.CPF})
             
-            return render(request, 'home/homepage.html', {'authenticateform': form, 'applyingform': form1, 'username':voter.NAME})
+            return render(request, 'home/apply.html', {'applyingform': form, 'username': voter.NAME, 'cpf': voter.CPF})
         
         except (TokenError, InvalidToken):
             return redirect('login')
-    
+        
     return redirect('login')
+   
     
 def load_offices(request):
     election_id = request.GET.get('election_id')

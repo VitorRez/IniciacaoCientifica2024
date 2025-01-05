@@ -31,7 +31,7 @@ def election_setting():
     enc_data = base64.b64decode(request.json['message'])
     data = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-    result = create_election(data[0], data[1])
+    result = create_election(data[0], data[1], data[2], data[3])
     header, message = parse_message(result)
 
     if header == 'success':

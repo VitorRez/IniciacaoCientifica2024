@@ -122,16 +122,60 @@
             background-color: red;
         }
 
+        .form {
+            margin: 20px auto; /* Centraliza horizontalmente */
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 100%; /* Define uma largura máxima */
+            box-sizing: border-box; /* Garante que o padding não ultrapasse a largura definida */
+        }
+
+        form h4 {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%; /* Ocupa 100% da largura do contêiner */
+            padding: 10px;
+            margin: 8px 0 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box; /* Inclui padding e borda na largura total */
+        }
+
+
       </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
     <div class="header">
-      <h1 class="title">Homepage</h1>
+      <h1 class="title">Authentication page</h1>
       <div class="user-info">
         <h3 class="name">{{ username }}</h2>
       </div>
     </div>
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    {% if error %}
+        <script>
+            alert("{{ error }}");
+        </script>
+    {% endif %}
+
+    {% if success %}
+        <script>
+            alert("{{ success }}");
+        </script>
+    {% endif %}
     <div class="main-container">
       <div class="sidebar">
         <button onclick="window.location.href='{% url 'homepage' %}'"">Homepage</button>
@@ -145,21 +189,9 @@
         <h2>Informações</h2>
         <h3>Name: {{username}}</h3>
         <h4>CPF: {{cpf}}</h4>
-        <div class="cards-container">
-            {% for card in cards %}
-            <div class="card">
-                <h3>{{ election.ELECTIONID }}</h3>
-                <p><strong>Election: </strong>{{card.electionid}}</p>
-                <p><strong>Date: </strong>{{card.end_setting}}</p>
-                <p><strong>Is authenticated?: </strong>
-                    <span class="status-circle {% if card.auth == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-                <p><strong>Is candidate?: </strong>
-                    <span class="status-circle {% if card.candidate == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-                <button>See commits</button>
-            </div>
-            {% endfor %}
+        <div class='form'>
+            <h2>Candidatura</h2>
+            {% include "forms/applying_form.html" %}
         </div>
       </div>
     </div>

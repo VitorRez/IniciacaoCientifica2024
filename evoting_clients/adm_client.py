@@ -9,13 +9,13 @@ import socket
 import datetime
 import requests
 
-SERVER_URL = "http://192.168.0.107:5000"
+SERVER_URL = "http://192.168.68.104:5000"
 
 def parse_message(message):
     header, content = message.split(': ')
     return header, content
 
-def electionSetting(electionid, num_offices):
+def electionSetting(electionid, num_offices, end_setting, end_election):
     try:
         response = requests.get(f"{SERVER_URL}/receive_pub_key")
 
@@ -23,7 +23,7 @@ def electionSetting(electionid, num_offices):
             pub_key_s = base64.b64decode(response.json()['key'])
             aes_key = get_random_bytes(16)
 
-            data = pickle.dumps([electionid, num_offices])
+            data = pickle.dumps([electionid, num_offices, end_setting, end_election])
             enc_data = encrypt_hybrid(data, pub_key_s, aes_key)
             enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
             

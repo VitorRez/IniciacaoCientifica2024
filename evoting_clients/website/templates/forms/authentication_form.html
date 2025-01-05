@@ -1,4 +1,4 @@
-<form method="POST" action="{% url 'homepage' %}">
+<form method="POST" action="{% url 'authenticate' %}">
     {% csrf_token %}
     <input type="hidden" name="form_type" value="authenticate">
     <h4>Selecione a Eleição:</h4>
