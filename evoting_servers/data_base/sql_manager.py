@@ -141,7 +141,7 @@ def create_offices(name, electionid, digit_num):
     num_offices = search_num_office(electionid)
 
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM OFFICES WHERE ELECTIONID = %s", (electionid,))
+    cursor.execute("SELECT COUNT(*) FROM OFFICES WHERE ELECTIONID = %s;", (electionid,))
     num_registered = cursor.fetchone()[0]
     
     try:
@@ -245,38 +245,19 @@ def delete_voter(cpf, electionid):
         db.close()
         return f'error: {e}'
 
-def create_commit(electionids):
+def create_commit(electionid):
     db = connect_to_db()
-    current_time = datetime.now(timezone('America/Sao_Paulo'))
 
     try:
         cursor = db.cursor()
-
-        format_ids = ', '.join(['%s'] * len(electionids))
-
-        query = f"""
-        SELECT
-            CREDENTIALS.CREDENTIAL,
-            CREDENTIALS.SALT,
-            CREDENTIALS.ELECTIONID
-        FROM
-            CREDENTIALS
-        INNER JOIN
-            ELECTION
-        ON 
-            CREDENTIALS.ELECTIONID = ELECTION.ELECTIONID
-        WHERE
-            CREDENTIALS.ELECTIONID IN ({format_ids})
-            AND {current_time} BETWEEN ELECTION.END_SETTING AND ELECTION.END_ELECTION;
-        """
-        cursor.execute(query)
+        cursor.execute("SELECT CREDENTIAL, SALT FROM CREDENTIALS WHERE ELECTIONID = %s;", (electionid,))
         rows = cursor.fetchall()
         db.close()
-        
+
         commits = []
-        for cred, salt, electionid in rows:
+        for cred, salt in rows:
             commit = create_hash((cred + salt))
-            commits.append([commit, electionid])
+            commits.append(commit)
 
         return commits
     

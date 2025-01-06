@@ -137,7 +137,7 @@
         <button onclick="window.location.href='{% url 'homepage' %}'"">Homepage</button>
         <button onclick="window.location.href='{% url 'authenticate' %}'">Authenticate</button>
         <button onclick="window.location.href='{% url 'apply' %}'">Apply for an office</button>
-        <button>See commits</button>
+        <button onclick="window.location.href='{% url 'commit' %}'">See commits</button>
         <button>Vote</button>
         <button>Logout</button>
       </div>
@@ -157,7 +157,6 @@
                 <p><strong>Is candidate?: </strong>
                     <span class="status-circle {% if card.candidate == 1 %}green{% else %}red{% endif %}"></span>
                 </p>
-                <button>See commits</button>
             </div>
             {% endfor %}
         </div>

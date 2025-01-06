@@ -55,3 +55,24 @@ class authenticateForm(forms.Form):
         if user is not None:
             registered_elections = VOTER.objects.filter(CPF=user.username).values_list('ELECTIONID', flat=True)
             self.fields['authenticateElection'].queryset = ELECTION.objects.filter(ELECTIONID__in=registered_elections)
+
+class commitForm(forms.Form):
+    commitElection = forms.ModelChoiceField(
+        queryset=ELECTION.objects.all(),
+        label="Selecione a Eleição",
+        empty_label="Selecione uma Eleição"
+    )
+    commitPassword = forms.CharField(
+        label="Senha",
+        widget=forms.PasswordInput,
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Extrai o usuário dos argumentos
+        super().__init__(*args, **kwargs)
+
+        # Filtra eleições baseadas nas eleições do usuário
+        if user is not None:
+            registered_elections = VOTER.objects.filter(CPF=user.username).values_list('ELECTIONID', flat=True)
+            self.fields['commitElection'].queryset = ELECTION.objects.filter(ELECTIONID__in=registered_elections)

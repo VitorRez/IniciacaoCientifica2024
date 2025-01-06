@@ -47,7 +47,7 @@ def createCredential():
     else:
         return jsonify({'error': result}), 400
     
-@app.route('/get_gommits', methods=['POST'])
+@app.route('/get_commits', methods=['POST'])
 def get_commits():
     pub_key_c = base64.b64decode(request.json['key'])
     enc_data = base64.b64decode(request.json['data'])
@@ -59,7 +59,7 @@ def get_commits():
     enc_data = encrypt_hybrid(pickle.dumps(commits), pub_key_c, aes_key)
     enc_data_base64 = base64.b64encode(enc_data).decode('utf-8')
 
-    return jsonify({'success': True, 'commits': enc_data_base64})
+    return jsonify({'success': True, 'commits': enc_data_base64}), 200
     
 app.run(host='0.0.0.0', port=5003)
 

@@ -5,116 +5,203 @@
     <meta charset="UTF-8">
     <title>Homepage</title>
     <style>
-        body {
-          margin: 0;
-          font-family: Arial, sans-serif;
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+  
+      .header {
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+      }
+      
+      .header .title {
+        text-align: center;
+        flex: 1;
+      }
+
+      .header .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .header .user-info h2 {
+        margin: 0;
+      }
+
+      .main-container {
+        display: flex;
+        flex: 1;
+      }
+  
+      .sidebar {
+        background-color: #f8f9fa;
+        width: 280px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+      }
+  
+      .sidebar button {
+        text-align: left;
+        font-weight: bold;
+        display: block;
+        width: 280px;
+        height: 50px;
+        padding: 0.5rem;
+        background-color: #d0d0d0;
+        color: #333333;
+        border: none;
+        cursor: pointer;
+      }
+  
+      .sidebar button:hover {
+        background-color: #0056b3;
+      }
+  
+      .content {
+        flex: 1;
+        padding: 1rem;
+        background-color: #e9ecef;
+        overflow-y: auto;
+      }
+
+      .cards-container {
           display: flex;
-          flex-direction: column;
-          height: 100vh;
-        }
-    
-        .header {
-          background-color: #007bff;
-          color: white;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
+      }
+
+      .card {
+          background-color: #ffffff;
+          border: 1px solid #ddd;
+          border-radius: 8px;
           padding: 1rem;
-          position: sticky;
-          top: 0;
-        }
-        
-        .header .title {
-          text-align: center;
-          flex: 1;
-        }
+          width: 250px;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
 
-        .header .user-info {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-        }
+      .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
 
-        .header .user-info h2 {
-          margin: 0;
-        }
+      .card h3 {
+          margin: 0 0 0.5rem 0;
+          color: #007bff;
+      }
 
-        .main-container {
-          display: flex;
-          flex: 1;
-        }
-    
-        .sidebar {
-          background-color: #f8f9fa;
-          width: 280px;
-          box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-          overflow-y: auto;
-        }
-    
-        .sidebar button {
-          text-align: left;
+      .card p {
+          margin: 0.5rem 0;
+          color: #333;
+      }
+
+      .status-circle {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-left: 5px;
+      }
+
+      .status-circle.green {
+          background-color: green;
+      }
+
+      .status-circle.red {
+          background-color: red;
+      }
+
+      .form {
+          margin: 20px auto; /* Centraliza horizontalmente */
+          padding: 15px;
+          background-color: #f9f9f9;
+          border-radius: 8px;
+          box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+          max-width: 100%; /* Define uma largura máxima */
+          box-sizing: border-box; /* Garante que o padding não ultrapasse a largura definida */
+      }
+
+      form h4 {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 5px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      select {
+          width: 100%; /* Ocupa 100% da largura do contêiner */
+          padding: 10px;
+          margin: 8px 0 16px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          box-sizing: border-box; /* Inclui padding e borda na largura total */
+      }
+
+      .commit_table {
+          margin: 20px auto; /* Centraliza horizontalmente */
+          padding: 15px;
+          background-color: #f9f9f9;
+          border-radius: 8px;
+          box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+          max-width: 100%; /* Define uma largura máxima */
+          box-sizing: border-box; /* Inclui padding e borda na largura total */
+      }
+
+      .commit_table h4 {
+          font-size: 18px;
+          color: #333;
+          margin-bottom: 15px;
           font-weight: bold;
-          display: block;
-          width: 280px;
-          height: 50px;
-          padding: 0.5rem;
-          background-color: #d0d0d0;
-          color: #333333;
-          border: none;
-          cursor: pointer;
-        }
-    
-        .sidebar button:hover {
-          background-color: #0056b3;
-        }
-    
-        .content {
-          flex: 1;
-          padding: 1rem;
-          background-color: #e9ecef;
-          overflow-y: auto;
-        }
+          text-align: center;
+      }
 
-        table {
+      .commit_table table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 1rem;
-        }
+          margin-top: 10px;
+          font-size: 14px;
+      }
 
-        table th, table td {
-          border: 1px solid #ddd;
-          padding: 8px;
+      .commit_table th, 
+      .commit_table td {
+          padding: 10px;
           text-align: left;
-        }
+          border-bottom: 1px solid #ddd;
+      }
 
-        table th {
-          background-color: #f4f4f4;
-        }
-
-        .filter-container {
-          margin-bottom: 1rem;
-        }
-
-        .filter-container input {
-          padding: 0.5rem;
-          font-size: 1rem;
-          width: 200px;
-          margin-right: 1rem;
-        }
-
-        .filter-container button {
-          padding: 0.5rem 1rem;
-          font-size: 1rem;
+      .commit_table th {
           background-color: #007bff;
           color: white;
-          border: none;
-          cursor: pointer;
-        }
+          font-weight: bold;
+      }
 
-        .filter-container button:hover {
-          background-color: #0056b3;
-        }
-      </style>
+      .commit_table tr:hover {
+          background-color: #f1f1f1;
+      }
+
+      .commit_table td {
+          color: #333;
+      }
+
+      .commit_table tr:last-child td {
+          border-bottom: none;
+      }
+
+
+    </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
@@ -124,12 +211,21 @@
         <h3 class="name">{{ username }}</h3>
       </div>
     </div>
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    {% if error %}
+        <script>
+            alert("{{ error }}");
+        </script>
+    {% endif %}
     <div class="main-container">
       <div class="sidebar">
         <button onclick="window.location.href='{% url 'homepage' %}'">Homepage</button>
         <button onclick="window.location.href='{% url 'authenticate' %}'">Authenticate</button>
         <button onclick="window.location.href='{% url 'apply' %}'">Apply for an office</button>
-        <button>See commits</button>
+        <button onclick="window.location.href='{% url 'commit' %}'">See commits</button>
         <button>Vote</button>
         <button>Logout</button>
       </div>
@@ -137,45 +233,28 @@
         <h2>Informações</h2>
         <h3>Name: {{username}}</h3>
         <h4>CPF: {{cpf}}</h4>
-
-        <div class="filter-container">
-          <input type="text" id="filter-electionid" placeholder="Filter by election ID">
-          <button onclick="filterTable()">Filter</button>
+        <div class='form'>
+          {% include "forms/commit_form.html" %}
         </div>
-
-        <table id="credentials-table">
-          <thead>
-            <tr>
-              <th>Election ID</th>
-              <th>Credential + Salt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for commit in commits %}
-            <tr>
-              <td>{{ commit.electionid }}</td>
-              <td>{{ commit.credential }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        {% if commits %}
+        <div class="commit_table">
+          <h4>Commits: </h4>
+          <table border="1" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+              <tr>
+                <th>Commit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for commit in commits %}
+                <tr>
+                  <td>{{ commit }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
       </div>
-    </div>
-
-    <script>
-        function filterTable() {
-            const filterValue = document.getElementById('filter-electionid').value.toLowerCase();
-            const rows = document.querySelectorAll('#credentials-table tbody tr');
-
-            rows.forEach(row => {
-                const electionID = row.children[0].textContent.toLowerCase();
-                if (electionID.includes(filterValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
 </html>

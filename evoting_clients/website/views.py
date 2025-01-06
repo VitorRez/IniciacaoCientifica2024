@@ -10,11 +10,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import AccessToken
 from .models import VOTER, ELECTION, OFFICE
-from .forms import applyingForm, authenticateForm
+from .forms import applyingForm, authenticateForm, commitForm
 from crypto.CryptoUtils.certificate import *
 from crypto.key_manager import *
 from adm_client import *
 from reg_client import *
+from tal_client import *
 import json
 
 def register(request):
@@ -86,6 +87,38 @@ def homepage(request):
             print(cards)
 
             return render(request, 'home/homepage.html', {'username':name, 'cpf':cpf, 'cards':cards})
+        
+        except (TokenError, InvalidToken):
+            return redirect('login')
+    
+    return redirect('login')
+
+
+def commit_page(request):
+    if 'access' in request.session:
+        try:
+            access_token = AccessToken(request.session['access'])
+
+            voter = VOTER.objects.filter(CPF=request.user.username).first()
+            
+            form = commitForm(user=request.user)
+
+            if request.method == 'POST':
+                electionid = request.POST.get('commitElection')
+                password = request.POST.get('commitPassword')
+
+                if request.user.check_password(password):
+                    voter = VOTER.objects.get(CPF=request.user.username, ELECTIONID=electionid)
+                    pub_key = search_public_key(voter.PUB_KEY)
+                    priv_key = search_private_key(password, voter.SALT, voter.PRIV_KEY)
+
+                    header, commits = get_commits(pub_key, priv_key, electionid)
+
+                    return render(request, 'home/commits.html', {'username': voter.NAME, 'cpf': request.user.username, 'electionid': electionid, 'commitform': form, 'commits': commits})
+
+                return render(request, 'home/commits.html', {'error': 'Invalid credentials.', 'username': voter.NAME, 'cpf': request.user.username, 'commitform': form})
+
+            return render(request, 'home/commits.html', {'username': voter.NAME, 'cpf': request.user.username, 'commitform': form})
         
         except (TokenError, InvalidToken):
             return redirect('login')

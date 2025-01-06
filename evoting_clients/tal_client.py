@@ -20,7 +20,7 @@ def get_commits(pub_key, priv_key, electionids):
     try:
         response = requests.get(f"{SERVER_URL}/receive_pub_key")
 
-        if response.status.code == 200:
+        if response.status_code == 200:
             pub_key_s = base64.b64decode(response.json()['key'])
             aes_key = get_random_bytes(16)
             key_base64 = base64.b64encode(pub_key).decode('utf-8')
@@ -29,8 +29,8 @@ def get_commits(pub_key, priv_key, electionids):
 
             response = requests.post(f"{SERVER_URL}/get_commits", json={'key': key_base64, 'data': enc_data})
 
-            enc_commit = response.json()['commits']
-            commit = decrypt_hybrid(enc_commit, priv_key)
+            enc_commit = base64.b64decode(response.json()['commits'])
+            commit = pickle.loads(decrypt_hybrid(enc_commit, priv_key))
 
             return ["success", commit]
         
