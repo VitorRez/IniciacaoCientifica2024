@@ -1,0 +1,24 @@
+<div class="sidebar">
+    <button onclick="window.location.href='{% url 'homepage' %}'">
+        <i class="fas fa-home"></i> Homepage
+    </button>
+    <button onclick="window.location.href='{% url 'create_elections' %}'">
+        <i></i> Elections
+    </button>
+    <button onclick="window.location.href='{% url 'create_voters' %}'">
+        <i></i> Voters
+    </button>
+    <button onclick="window.location.href='{% url 'create_offices' %}'">
+        <i></i> Offices
+    </button>
+    <button>
+        <i></i> Candidates
+    </button>
+    <div class="separator"></div>
+    <button onclick="window.location.href='{% url 'commit' %}'">
+        <i class="fas fa-code-branch"></i> See Commits
+    </button>
+    <button onclick="window.location.href='{% url 'logout' %}'">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</div>

@@ -1,4 +1,7 @@
 apturl==0.5.2
+argon2==0.1.10
+argon2-cffi==23.1.0
+argon2-cffi-bindings==21.2.0
 asgiref==3.8.1
 blinker==1.9.0
 Brlapi==0.8.3
@@ -20,6 +23,7 @@ django-livereload-server==0.5.1
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 Flask==3.1.0
+gyp==0.1
 httplib2==0.20.2
 idna==3.3
 importlib-metadata==4.6.4
@@ -59,6 +63,7 @@ pyRFC3339==1.1
 python-apt==2.4.0+ubuntu4
 python-dateutil==2.8.1
 python-debian==0.1.43+ubuntu1.1
+python-dotenv==1.0.1
 pytz==2022.1
 pyxdg==0.27
 PyYAML==5.4.1

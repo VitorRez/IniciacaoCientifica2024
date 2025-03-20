@@ -7,8 +7,6 @@ from pytz import timezone
 
 class ELECTION(models.Model):
     ELECTIONID = models.IntegerField(primary_key=True)
-    YEAR = models.IntegerField(default=datetime.now().year, null=False)
-    NUM_OFFICES = models.IntegerField()
     END_SETTING = models.DateTimeField(default=datetime.now(timezone('America/Sao_Paulo')))
     END_ELECTION = models.DateTimeField(default=datetime.now(timezone('America/Sao_Paulo')))
 
@@ -16,12 +14,12 @@ class ELECTION(models.Model):
         return str(self.ELECTIONID)
 
 class VOTER(models.Model):
-    NAME = models.TextField(default=" ")
+    NAME = models.TextField()
     CPF = models.TextField()
     ELECTIONID = models.ForeignKey(ELECTION, on_delete=models.CASCADE)
     AUTH = models.IntegerField(default=0)
     CANDIDATE = models.IntegerField(default=0)
-    PUB_KEY = models.TextField(default=" ")
+    PUB_KEY = models.TextField()
     PRIV_KEY = models.BinaryField()
     SALT = models.BinaryField()
 
@@ -34,7 +32,6 @@ class VOTER(models.Model):
 class OFFICE(models.Model):
     NAME = models.TextField(default=" ")
     ELECTIONID = models.ForeignKey(ELECTION, on_delete=models.CASCADE)
-    DIGIT_NUM = models.IntegerField()
 
     class Meta:
         unique_together = (('NAME', 'ELECTIONID'))

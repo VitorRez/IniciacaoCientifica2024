@@ -3,8 +3,10 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from .models import VOTER, ELECTION, OFFICE
-from adm_client import *
-from reg_client import *
+from .clients.adm import *
+from .clients.reg import *
+from .clients.tal import *
+from .clients.val import *
 
 # Register your models here.
 
@@ -33,20 +35,20 @@ class CustomUserAdmin(UserAdmin):
     )
 
 class ElectionAdmin(admin.ModelAdmin):
-    list_display = ('ELECTIONID', 'YEAR', 'NUM_OFFICES', 'END_SETTING', 'END_ELECTION')
+    list_display = ('ELECTIONID', 'END_SETTING', 'END_ELECTION')
 
     def save_model(self, request, obj, form, change):
-        header, content = electionSetting(obj.ELECTIONID, obj.NUM_OFFICES, obj.END_SETTING, obj.END_ELECTION)
+        header, content = electionSetting(obj.ELECTIONID, obj.END_SETTING, obj.END_ELECTION)
         print(header, content)
         
         if header != 'error':
             super().save_model(request, obj, form, change)
         
 class OfficeAdmin(admin.ModelAdmin):
-    list_display = ('NAME', 'ELECTIONID', 'DIGIT_NUM')
+    list_display = ('NAME', 'ELECTIONID')
 
     def save_model(self, request, obj, form, change):
-        header, content = officeSetting(obj.NAME, obj.ELECTIONID.ELECTIONID, obj.DIGIT_NUM)
+        header, content = officeSetting(obj.NAME, obj.ELECTIONID.ELECTIONID)
         
         if header != 'error':
             super().save_model(request, obj, form, change)
@@ -54,7 +56,9 @@ class OfficeAdmin(admin.ModelAdmin):
 class VoterAdmin(admin.ModelAdmin):
     list_display = ('NAME', 'CPF',
                     'ELECTIONID', 'PUB_KEY', 
-                    'PRIV_KEY')
+                    'PRIV_KEY', 'AUTH',
+                    'CANDIDATE')
+    exclude = ('PUB_KEY','PRIV_KEY','AUTH', 'CANDIDATE')
     
     def save_model(self, request, obj, form, change):
         header, content = registering(obj.NAME, obj.CPF, obj.ELECTIONID.ELECTIONID)

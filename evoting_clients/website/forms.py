@@ -5,7 +5,7 @@ class applyingForm(forms.Form):
     applyElection = forms.ModelChoiceField(
         queryset=ELECTION.objects.all(),
         label="Selecione a Eleição",
-        empty_label="Selecione uma eleição"
+        empty_label="Election"
     )
     office = forms.ChoiceField(
         label="Selecione o Cargo",
@@ -39,7 +39,7 @@ class authenticateForm(forms.Form):
     authenticateElection = forms.ModelChoiceField(
         queryset=ELECTION.objects.all(),
         label="Selecione a Eleição",
-        empty_label="Selecione uma eleição"
+        empty_label="Election"
     )
     authenticatePassword = forms.CharField(
         label="Senha",
@@ -60,7 +60,7 @@ class commitForm(forms.Form):
     commitElection = forms.ModelChoiceField(
         queryset=ELECTION.objects.all(),
         label="Selecione a Eleição",
-        empty_label="Selecione uma Eleição"
+        empty_label="Election"
     )
     commitPassword = forms.CharField(
         label="Senha",

@@ -1,11 +1,9 @@
 <form method="POST" action="{% url 'commit' %}">
     {% csrf_token %}
     <input type="hidden" name="form_type" value="authenticate">
-    <h4>Selecione a Eleição:</h4>
+    <h3>Select the Election:</h3>
     {{ commitform.commitElection }}
-    <h4>Senha:</h4>
+    <h3>Password:</h3>
     {{ commitform.commitPassword }}
-    <br>
-    <br>
-    <button type='submit' id='form_button'>Enviar</button>
+    <button type='submit' class='form_button'>Submit</button>
 </form>

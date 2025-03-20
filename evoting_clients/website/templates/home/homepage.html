@@ -4,163 +4,40 @@
     {% load static %}
     <meta charset="UTF-8">
     <title>Homepage</title>
-    <style>
-        body {
-          margin: 0;
-          font-family: Arial, sans-serif;
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-        }
-    
-        .header {
-          background-color: #007bff;
-          color: white;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem;
-          position: sticky;
-          top: 0;
-        }
-        
-        .header .title {
-          text-align: center;
-          flex: 1;
-        }
-
-        .header .user-info {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-        }
-
-        .header .user-info h2 {
-          margin: 0;
-        }
-
-        .main-container {
-          display: flex;
-          flex: 1;
-        }
-    
-        .sidebar {
-          background-color: #f8f9fa;
-          width: 280px;
-          box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-          overflow-y: auto;
-        }
-    
-        .sidebar button {
-          text-align: left;
-          font-weight: bold;
-          display: block;
-          width: 280px;
-          height: 50px;
-          padding: 0.5rem;
-          background-color: #d0d0d0;
-          color: #333333;
-          border: none;
-          cursor: pointer;
-        }
-    
-        .sidebar button:hover {
-          background-color: #0056b3;
-        }
-    
-        .content {
-          flex: 1;
-          padding: 1rem;
-          background-color: #e9ecef;
-          overflow-y: auto;
-        }
-
-        .cards-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .card {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            width: 250px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .card h3 {
-            margin: 0 0 0.5rem 0;
-            color: #007bff;
-        }
-
-        .card p {
-            margin: 0.5rem 0;
-            color: #333;
-        }
-
-        .status-circle {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-left: 5px;
-        }
-
-        .status-circle.green {
-            background-color: green;
-        }
-
-        .status-circle.red {
-            background-color: red;
-        }
-
-      </style>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}?v=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
-    <div class="header">
-      <h1 class="title">Homepage</h1>
-      <div class="user-info">
-        <h3 class="name">{{ username }}</h2>
-      </div>
-    </div>
+    {% include "info/header.html"%}
+
     <div class="main-container">
-      <div class="sidebar">
-        <button onclick="window.location.href='{% url 'homepage' %}'"">Homepage</button>
-        <button onclick="window.location.href='{% url 'authenticate' %}'">Authenticate</button>
-        <button onclick="window.location.href='{% url 'apply' %}'">Apply for an office</button>
-        <button onclick="window.location.href='{% url 'commit' %}'">See commits</button>
-        <button>Vote</button>
-        <button>Logout</button>
-      </div>
-      <div class="content">
-        <h2>Informações</h2>
-        <h3>Name: {{username}}</h3>
-        <h4>CPF: {{cpf}}</h4>
-        <div class="cards-container">
-            {% for card in cards %}
-            <div class="card">
-                <h3>{{ election.ELECTIONID }}</h3>
-                <p><strong>Election: </strong>{{card.electionid}}</p>
-                <p><strong>Date: </strong>{{card.end_setting}}</p>
-                <p><strong>Is authenticated?: </strong>
-                    <span class="status-circle {% if card.auth == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-                <p><strong>Is candidate?: </strong>
-                    <span class="status-circle {% if card.candidate == 1 %}green{% else %}red{% endif %}"></span>
-                </p>
-            </div>
-            {% endfor %}
+        {% include "info/sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+
+            <div class="cards-container">
+                {% for card in cards %}
+                    <div class="card" onclick="window.location.href='{% url 'election' %}?electionid={{ card.electionid }}'">
+                        <h3>{{ card.description }}</h3>
+                        <p><strong>Election ID:</strong> {{ card.electionid }}</p>
+                        <p><strong>Starts:</strong> {{ card.end_setting }}</p>
+                        <p><strong>Ends:</strong> {{ card.end_election }}</p>
+                        <div class="status">
+                            <div>
+                                <span class="status-label">Authenticated:</span>
+                                <span class="status-indicator {% if card.auth == 1 %}green{% else %}red{% endif %}"></span>
+                            </div>
+                            <div>
+                                <span class="status-label">Candidate:</span>
+                                <span class="status-indicator {% if card.candidate == 1 %}green{% else %}red{% endif %}"></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>            
+
         </div>
-      </div>
     </div>
 </body>
 </html>

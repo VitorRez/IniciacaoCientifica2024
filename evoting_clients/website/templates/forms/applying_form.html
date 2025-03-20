@@ -1,17 +1,23 @@
 <form method="POST" action="{% url 'apply' %}">
     {% csrf_token %}
     <input type="hidden" name="form_type" value="apply">
-    <h4>Selecione a Eleição:</h4>
-    {{ applyingform.applyElection }}
-    <h4>Selecione o Cargo:</h4>
-    {{ applyingform.office }}
-    <h4>Senha:</h4>
-    {{ applyingform.applyPassword }}
-    <h4>Número de campanha:</h4>
-    {{ applyingform.campaignId }}
-    <br>
-    <br>
-    <button type='submit' id='form_button'>Enviar</button>
+    <h3>Select the Election</h3>
+    <select name='electionid' required>
+        <option value='' disabled selected>Select one election</option>
+        {% for election in elections %}
+        <option value= {{election.electionid}} >{{ election.description }}</option>
+        {% endfor %}
+    </select>
+    <h3>Select the Office</h3>
+    <select>
+        <option value='' disabled selected>Select one office</option>
+        {% for office in offices %}
+        <option value= {{office.office_name}}>{{ office.office_name }}</option>
+        {% endfor %}
+    </select>
+    <h3>Password</h3>
+    <input name="password" type="Password" >
+    <button type='submit' class='form_button'>Submit</button>
 </form>
 
 <script type="text/javascript">
