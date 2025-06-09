@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Voting page</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+
+            <div class="election">
+                <h2>Election: {{ election.description }} - {{election.electionid}}</h2>
+                <form method="POST" action="{% url 'voting' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="electionid" value="{{ election.electionid }}">
+                    
+                    {% for office in election.offices %}
+                        <div class="office">
+                            <h3>Office: {{ office.office_name }}</h3>
+                            {% for candidate in office.candidates %}
+                                <div>
+                                    <input type="radio" 
+                                           id="candidate-{{ candidate.cpf }}" 
+                                           name="{{ office.office_name }}" 
+                                           value="{{ candidate.name }}" 
+                                           required>
+                                    <label for="candidate-{{ candidate.cpf }}">
+                                        {{ candidate.name }} (CPF: {{ candidate.cpf }})
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <h3>Password:</h3>
+                    <input name="password" type="Password">
+                    <button type="submit" name="audit" value="1" class="form_button">Audit</button>
+                    <br>
+                    <br>
+                    <button type="submit" class="form_button">Submit</button>
+                </form>
+            </div>
+
+            {% if enc_ballot and pub_key and ephemeral_key %}
+                <div class="info-section">
+                    <h2>Clean ballot:</h2>
+                    <div class="certificate-container">
+                        <pre>{{ ballot }}</pre>
+                    </div>
+                    <br>
+                    <h2>Encrypted ballot:</h2>
+                    <div class="certificate-container">
+                        <pre>{{ enc_ballot }}</pre>
+                    </div>
+                    <br>
+                    <h2>Tallier public key:</h2>
+                    <div class="certificate-container">
+                        <pre>{{ pub_key }}</pre>
+                    </div>
+                    <br>
+                    <h2>Ephemeral key:</h2>
+                    <div class="certificate-container">
+                        <pre>{{ ephemeral_key }}</pre>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verifica se há uma mensagem de sucesso
+            const success = "{{ success|escapejs }}";
+            if (success) {
+                alert(success);
+            }
+    
+            // Verifica se há uma mensagem de erro
+            const error = "{{ error|escapejs }}";
+            if (error) {
+                alert("Error: " + error);
+            }
+        });
+    </script> 
+    
+</body>
+</html>

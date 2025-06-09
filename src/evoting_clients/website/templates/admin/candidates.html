@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}?v=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/admin_sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+            
+            <div class="commit_table">
+                <h2>Candidates</h2>
+                <table border="1" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>CPF</th>
+                            <th>Name</th>
+                            <th>Election ID</th>
+                            <th>Office Name</th>
+                            <th>Approved</th>
+                            <th>Approve candidate?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidates %}
+                        <tr>
+                            <td>{{ candidate.cpf }}</td>
+                            <td>{{ candidate.name }}</td>
+                            <td>{{ candidate.electionid }}</td>
+                            <td>{{ candidate.office_name }}</td>
+                            <td><span class="status-indicator {% if candidate.approved|add:0 == 1 %}green{% else %}red{% endif %}"></span></td>
+                            <td>
+                                {% if candidate.approved|add:0 == 0 %}
+                                    <form method="POST" action="{% url 'candidates' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="approve_candidate" value="{{ candidate.electionid }}  {{ candidate.cpf }} {{ candidate.office_name }}">
+                                        <button type="submit" class="delete-btn">Approve</button>
+                                    </form>
+                                {% else %}
+                                    Approved
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No candidate found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verifica se há uma mensagem de sucesso
+            const message = "{{ message|escapejs }}";
+            if (message) {
+                alert(message);
+            }
+    
+            // Verifica se há uma mensagem de erro
+            const error = "{{ error|escapejs }}";
+            if (error) {
+                alert("Error: " + error);
+            }
+        });
+    </script> 
+
+</body>
+</html>

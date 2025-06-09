@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Election</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}?v=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/admin_sidebar.html"%}
+
+        <div class="content">
+
+            <div class="info-section">
+                <h2>Informations</h2>
+                <div class="info-item">
+                    <h3>Description: </h3>
+                    <p> {{ election.description }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Election: </h3>
+                    <p> {{ election.electionid }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Starts: </h3>
+                    <p> {{ election.end_setting }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Ends: </h3>
+                    <p> {{ election.end_election }} </p>
+                </div>
+                
+            </div>
+
+            <div class="info-section">
+                <h2>Offices and candidates</h2>
+                <div>
+                    {% for office, candidates in election.offices.items %}
+                        <h3>{{ office }}</h3>
+                        <ul>
+                            {% for candidate in candidates %}
+                                <li>{{ candidate.name }} (CPF: {{ candidate.cpf }})</li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="form">
+                <h2>Update Election</h2>
+                <form method="POST" action="{% url 'election_admin' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="electionid" value="{{ election.electionid }}">
+                    <div class="form-group">
+                        <h3>End Setting:</h3>
+                        <input type="datetime-local" class="end_setting" name="end_setting" required 
+                            value="{{ election.end_setting }}">
+                    </div>
+                    <div class="form-group">
+                        <h3>End Election</h3>
+                        <input type="datetime-local" class="end_election" name="end_election" required 
+                            value="{{ election.end_election }}">
+                    </div>
+                    <div class="form-group">
+                        <h3>Description:</h3>
+                        <input type="text" class="description" name="description" 
+                               value="{{ election.description }}">
+                    </div>
+                    <button class="form_button" type="submit">Submit</button>
+                </form>
+            </div>              
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const message = "{{ message|escapejs }}";
+            if (message) {
+                alert(message);
+            }
+    
+            const error = "{{ error|escapejs }}";
+            if (error) {
+                alert("Error: " + error);
+            }
+        });
+    </script> 
+
+</body>
+</html>

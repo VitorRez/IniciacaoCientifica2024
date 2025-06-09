@@ -1,0 +1,18 @@
+<div class="sidebar">
+    <button onclick="window.location.href='{% url 'homepage' %}'">
+        <i class="fas fa-home"></i> Homepage
+    </button>
+    <button onclick="window.location.href='{% url 'authenticate' %}'">
+        <i class="fas fa-user-check"></i> Authenticate
+    </button>
+    <button onclick="window.location.href='{% url 'apply' %}'">
+        <i class="fas fa-file-signature"></i> Apply for an Office
+    </button>
+    <div class="separator"></div>
+    <button onclick="window.location.href='{% url 'commit' %}'">
+        <i class="fas fa-code-branch"></i> See Commits
+    </button>
+    <button onclick="window.location.href='{% url 'logout' %}'">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</div>

@@ -1,0 +1,71 @@
+<form method="POST" action="{% url 'apply' %}">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="apply">
+    <h3>Select the Election</h3>
+    <select id="electionSelect" name='electionid' required>
+        <option value='' disabled selected>Select one election</option>
+        {% for election in elections %}
+        <option value="{{ election.electionid }}">{{ election.description }}</option>
+        {% endfor %}
+    </select>
+
+    <h3>Select the Office</h3>
+    <select id="officeSelect" name="office" required>
+        <option value='' disabled selected>Select one office</option>
+    </select>
+
+    <h3>Password</h3>
+    <input name="password" type="Password">
+    <button type='submit' class='form_button'>Submit</button>
+</form>
+
+<script>
+    var officesByElection = {
+        {% for election in elections %}
+            "{{ election.electionid }}": [
+                {% for office in offices %}
+                    {% if office.electionid == election.electionid %}
+                        { name: "{{ office.office_name }}" },
+                    {% endif %}
+                {% endfor %}
+            ],
+        {% endfor %}
+    };
+</script>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        var electionSelect = document.getElementById("electionSelect");
+        var officeSelect = document.getElementById("officeSelect");
+
+        electionSelect.addEventListener("change", function () {
+            var electionId = this.value;
+            officeSelect.innerHTML = '<option value="" disabled selected>Select one office</option>';
+
+            if (officesByElection[electionId]) {
+                officesByElection[electionId].forEach(function (office) {
+                    var option = document.createElement("option");
+                    option.value = office.name;
+                    option.textContent = office.name;
+                    officeSelect.appendChild(option);
+                });
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Verifica se há uma mensagem de sucesso
+        const success = "{{ success|escapejs }}";
+        if (success) {
+            alert(success);
+        }
+
+        // Verifica se há uma mensagem de erro
+        const error = "{{ error|escapejs }}";
+        if (error) {
+            alert("Error: " + error);
+        }
+    });
+</script> 

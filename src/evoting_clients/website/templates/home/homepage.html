@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}?v=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+
+            <div class="cards-container">
+                {% for card in cards %}
+                    <div class="card" onclick="window.location.href='{% url 'election' %}?electionid={{ card.electionid }}'">
+                        <h3>{{ card.description }}</h3>
+                        <p><strong>Election ID:</strong> {{ card.electionid }}</p>
+                        <p><strong>Starts:</strong> {{ card.end_setting }}</p>
+                        <p><strong>Ends:</strong> {{ card.end_election }}</p>
+                        <div class="status">
+                            <div>
+                                <span class="status-label">Authenticated:</span>
+                                <span class="status-indicator {% if card.auth == 1 %}green{% else %}red{% endif %}"></span>
+                            </div>
+                            <div>
+                                <span class="status-label">Candidate:</span>
+                                <span class="status-indicator 
+                                    {% if card.candidate == 1 %}yellow
+                                    {% elif card.candidate == 2 %}green
+                                    {% else %}red
+                                    {% endif %}">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>         
+
+        </div>
+    </div>
+</body>
+</html>

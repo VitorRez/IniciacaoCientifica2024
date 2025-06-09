@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Election</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}?v=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+
+            <div class="info-section">
+                <h2>Election</h2>
+                <div class="info-item">
+                    <h3>Description: </h3>
+                    <p> {{ election.description }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Election ID: </h3>
+                    <p> {{ election.electionid }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Starts: </h3>
+                    <p id="start_time"> {{ election.end_setting }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Ends: </h3>
+                    <p id="end_time"> {{ election.end_election }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Authenticated: </h3>
+                    <span class="status-indicator
+                        {% if voter.auth == 1 %}green
+                        {% else %}red
+                        {% endif %}">
+                    </span>
+                </div>
+                <div class="info-item">
+                    <h3>Candidate: </h3>
+                    <span class="status-indicator 
+                        {% if voter.candidate == 1 %}yellow
+                        {% elif voter.candidate == 2 %}green
+                        {% else %}red
+                        {% endif %}">
+                    </span>
+                </div>
+            </div>
+
+            <div class="form" id="vote_button_container" style="display: none;">
+                <button onclick="window.location.href='{% url 'voting' %}?electionid={{ election.electionid }}'" class="form_button">Start voting!</button>
+            </div>
+
+            <div class="info-section">
+                <h2>Offices and candidates</h2>
+                <div>
+                    {% for office in election.offices %}
+                        <h3>{{ office.office_name }}</h3>
+                        <ul>
+                            {% for candidate in office.candidates %}
+                                {% if candidate.approved == '1'%}
+                                    <li>{{ candidate.name }} (CPF: {{ candidate.cpf }})</li>
+                                {% else %}
+                                    <li>{{ candidate.name }} (CPF: {{ candidate.cpf }}) (Not approved yet)</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form" id="form_auth" style="display: none;">
+                <h2>Authenticate in this election?</h2>
+                {% if voter.auth == 0 %}
+                <form method="POST" action="{% url 'election'%}">
+                    {% csrf_token %}
+                    <input type="hidden" name="electionid" value="{{ election.electionid }}">
+                    <h3>Password:</h3>
+                    <input name="auth_password" type="Password">
+                    <button type='submit' class="form_button">Submit</button>
+                </form>
+                {% else %}
+                <h3>Voter already authenticated</h3>
+                {% endif %}
+            </div>
+
+            <div class="form" id="form_candidate" style="display: none;">
+                <h2>Apply for an office?</h2>
+                {% if voter.auth == 0 %}
+                <h3>Voter must be authenticated</h3>
+                {% elif voter.candidate == 1 or voter.candidate == 2%}
+                <h3>Voter already applied for an office</h3>
+                {% else %}
+                <form method="POST" action="{% url 'election'%}">
+                    {% csrf_token %}
+                    <input type="hidden" name="electionid" value="{{ election.electionid }}">
+                    <h3>Select one Office</h3>
+                    <select name='office_name' required>
+                        <option value='' disabled selected>Select one office</office>
+                            {% for office in election.offices %}
+                                <option value={{office.office_name}}>{{office.office_name}}</option>
+                            {% endfor %}
+                    </select>
+                    <h3>Password:</h3>
+                    <input name="apply_password" type="Password">
+                    <button type='submit' class="form_button">Submit</button>
+                </form>
+                {% endif %}
+            </div> 
+            
+            <div class="info-section">
+                <h2>Public Key:</h2>
+                <div class="certificate-container">
+                    <pre>{{ voter.pub_key }}</pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verifica se há uma mensagem de sucesso
+            const success = "{{ success|escapejs }}";
+            if (success) {
+                alert(success);
+            }
+    
+            // Verifica se há uma mensagem de erro
+            const error = "{{ error|escapejs }}";
+            if (error) {
+                alert("Error: " + error);
+            }
+        });
+    </script> 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const start_time_str = document.getElementById("start_time").textContent.trim()
+            const end_time_str = document.getElementById("end_time").textContent.trim()
+
+            const startTime = new Date(start_time_str.replace(" GMT", ""));
+            const endTime = new Date(end_time_str.replace(" GMT", ""));
+            const now = new Date();
+            
+            if (now >= startTime && now <= endTime) {
+                document.getElementById("vote_button_container").style.display = "block";
+            }
+
+            if (now <= startTime) {
+                document.getElementById("form_auth").style.display = "block";
+                document.getElementById("form_candidate").style.display = "block";
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+<form method="POST" action="{% url 'authenticate' %}">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="authenticate">
+    <h3>Select the Election:</h3>
+    <select name='electionid' required>
+        <option value='' disabled selected>Select one election</option>
+        {% for election in elections %}
+        <option value= {{election.electionid}} >{{ election.description }}</option>
+        {% endfor %}
+    </select>
+    <h3>Password:</h3>
+    <input name="password" type="Password" >
+    <button type='submit' class='form_button'>Submit</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Verifica se há uma mensagem de sucesso
+        const message = "{{ message|escapejs }}";
+        if (message) {
+            alert(message);
+        }
+
+        // Verifica se há uma mensagem de erro
+        const error = "{{ error|escapejs }}";
+        if (error) {
+            alert("Error: " + error);
+        }
+    });
+</script> 

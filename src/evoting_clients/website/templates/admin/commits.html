@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Commit page</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "info/header.html"%}
+
+    <div class="main-container">
+        {% include "info/admin_sidebar.html"%}
+
+        <div class="content">
+            {% include "info/info.html"%}
+
+            {% for election in elections %}
+            <div class="commit_table">
+                <h3>Commits on election: {{ election.description }}</h3>
+                <table border="1" style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>Election ID: {{ election.electionid }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commit in election.commits %}
+                        <tr>
+                            <td>{{ commit }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td>No commit value available for this election.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% empty %}
+            <div>
+                <h3>No election available for this voter.</h3>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
