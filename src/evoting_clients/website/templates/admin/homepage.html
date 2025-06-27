@@ -21,7 +21,7 @@
                     <div class="card" onclick="window.location.href='{% url 'election_admin' %}?electionid={{ card.electionid }}'">
                         <h3>{{ card.description }}</h3>
                         <p><strong>Election ID:</strong> {{ card.electionid }}</p>
-                        <p><strong>Starts:</strong> {{ card.end_setting }}</p>
+                        <p><strong>Starts:</strong> {{ card.start_election }}</p>
                         <p><strong>Ends:</strong> {{ card.end_election }}</p>
                         <div class="status">
                             <div>

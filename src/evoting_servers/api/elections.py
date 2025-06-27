@@ -75,7 +75,7 @@ def get_elections():
     try:
         cursor = db.cursor()
 
-        cursor.execute("SELECT ELECTIONID, END_SETTING, END_ELECTION, DESCRIPTION FROM ELECTION;")
+        cursor.execute("SELECT ELECTIONID, END_SETTING, START_ELECTION, END_ELECTION, START_DISCLOSURE, DESCRIPTION FROM ELECTION;")
         elections_data = cursor.fetchall()
 
         elections = []
@@ -91,8 +91,10 @@ def get_elections():
             elections.append({
                 "electionid": electionid,
                 "end_setting": str(row[1]),
-                "end_election": str(row[2]),
-                "description": row[3],
+                "start_election": str(row[2]),
+                "end_election": str(row[3]),
+                "start_disclosure": str(row[4]),
+                "description": row[5],
                 "num_voters": num_voters,
                 "num_offices": len(offices),
                 "offices": offices
@@ -117,7 +119,7 @@ def get_election(electionid):
     cursor = db.cursor(dictionary=True)
     
     try:
-        cursor.execute("SELECT ELECTIONID, END_SETTING, END_ELECTION, DESCRIPTION FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
+        cursor.execute("SELECT ELECTIONID, END_SETTING, START_ELECTION, END_ELECTION, START_DISCLOSURE, DESCRIPTION FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
         election = cursor.fetchone()
         
         if not election:
@@ -135,7 +137,9 @@ def get_election(electionid):
         election = {
             "electionid": election['ELECTIONID'],
             "end_setting": election['END_SETTING'],
+            "start_election": election['START_ELECTION'],
             "end_election": election['END_ELECTION'],
+            "start_disclosure": election['START_DISCLOSURE'],
             "description": election['DESCRIPTION'],
             "num_voters": num_voters,
             "num_offices": len(offices),
@@ -196,6 +200,26 @@ def search_end_setting(electionid):
         db.close()
 
 
+def search_start_election(electionid):
+    db = connect_to_db()
+    cursor = db.cursor(buffered=True)
+    try:
+        cursor.execute("SELECT START_ELECTION FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
+        result = cursor.fetchone()
+
+        if result:
+            db.close()
+            return {"success": True, "data": result[0]}
+        
+        else:
+            db.close()
+            return {"success": False, "error": "couldn't find this election."}
+        
+    finally:
+        cursor.close()
+        db.close()
+
+
 def search_end_election(electionid):
     db = connect_to_db()
     cursor = db.cursor(buffered=True)
@@ -203,6 +227,26 @@ def search_end_election(electionid):
         cursor.execute("SELECT END_ELECTION FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
         result = cursor.fetchone()
         
+        if result:
+            db.close()
+            return {"success": True, "data": result[0]}
+        
+        else:
+            db.close()
+            return {"success": False, "error": "couldn't find this election."}
+        
+    finally:
+        cursor.close()
+        db.close()
+
+
+def search_start_disclosure(electionid):
+    db = connect_to_db()
+    cursor = db.cursor(buffered=True)
+    try:
+        cursor.execute("SELECT START_DISCLOSURE FROM ELECTION WHERE ELECTIONID = %s;", (electionid,))
+        result = cursor.fetchone()
+
         if result:
             db.close()
             return {"success": True, "data": result[0]}

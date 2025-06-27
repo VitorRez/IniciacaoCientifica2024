@@ -4,7 +4,7 @@ import random
 
 def connect_to_db():
     db = mysql.connector.connect(
-        host="localhost",
+        host="192.168.56.10",
         user="ELECTIONAUTH",
         password="Fr468vj#",
         database="evoting_database",

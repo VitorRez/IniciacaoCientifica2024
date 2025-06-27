@@ -158,12 +158,16 @@ def create_elections(request):
             
         else:
             end_setting = request.POST.get('end_setting')
+            start_election = request.POST.get('start_election')
             end_election = request.POST.get('end_election')
+            start_disclosure = request.POST.get('start_disclosure')
             description = request.POST.get('description')
 
             try:
                 end_setting = datetime.fromisoformat(end_setting)
+                start_election = datetime.fromisoformat(start_election)
                 end_election = datetime.fromisoformat(end_election)
+                start_disclosure = datetime.fromisoformat(start_disclosure)
 
             except ValueError:
                 return render(request, 'admin/create_elections.html', {
@@ -173,7 +177,7 @@ def create_elections(request):
                     "elections": elections
                 })
             
-            response = create_election(end_setting, end_election, description)
+            response = create_election(end_setting, start_election, end_election, start_disclosure, description)
             elections = get_elections()["data"]
 
             if response['success']:
@@ -725,13 +729,17 @@ def election_page_admin(request):
             })
         
         end_setting = request.POST.get('end_setting')
+        start_election = request.POST.get('start_election')
         end_election = request.POST.get('end_election')
+        start_disclosure = request.POST.get('start_disclosure')
         description = request.POST.get('description')
 
         end_setting = datetime.fromisoformat(end_setting)
+        start_election = datetime.fromisoformat(start_election)
         end_election = datetime.fromisoformat(end_election)
+        start_disclosure = datetime.fromisoformat(start_disclosure)
 
-        response = update_election(electionid, end_setting, end_election, description)
+        response = update_election(electionid, end_setting, start_election, end_election, start_disclosure, description)
 
         if response['success']:
             election = get_election(electionid)['data']

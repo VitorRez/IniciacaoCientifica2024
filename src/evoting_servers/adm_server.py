@@ -37,9 +37,9 @@ def getElections():
 @app.route('/create_election', methods=['POST'])
 def createElection():
     enc_data = request.json['message']
-    end_setting, end_election, description = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+    end_setting, start_election, end_election, start_disclosure, description = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-    result = create_election(end_setting, end_election, description)
+    result = create_election(end_setting, start_election, end_election, start_disclosure, description)
     
     if result["success"]:
         return jsonify(result), 200
@@ -50,9 +50,9 @@ def createElection():
 @app.route('/update_election', methods=['POST'])
 def updateElection():
     enc_data = request.json['message']
-    electionid, end_setting, end_election, description = pickle.loads(decrypt_hybrid(enc_data, priv_key))
+    electionid, end_setting, start_election, end_election, start_disclosure, description = pickle.loads(decrypt_hybrid(enc_data, priv_key))
 
-    result = update_election(electionid, end_setting, end_election, description)
+    result = update_election(electionid, end_setting, start_election, end_election, start_disclosure, description)
 
     if result["success"]:
         return jsonify(result), 200

@@ -12,7 +12,7 @@ import requests
 
 URL = "http://0.0.0.0:5000"
 
-def create_election(end_setting, end_election, description):
+def create_election(end_setting, start_election, end_election, start_disclosure, description):
     try:
         response = requests.get(f"{URL}/receive_pub_key")
 
@@ -20,7 +20,7 @@ def create_election(end_setting, end_election, description):
             pub_key_s = import_key(response.json()['key'])
             aes_key = get_random_bytes(16)
 
-            data = pickle.dumps([end_setting, end_election, description])
+            data = pickle.dumps([end_setting, start_election, end_election, start_disclosure, description])
             enc_data, ephemeral_key = encrypt_hybrid(data, pub_key_s, aes_key)
             
             response = requests.post(f"{URL}/create_election", json={'message': enc_data})
@@ -33,7 +33,7 @@ def create_election(end_setting, end_election, description):
     except Exception as e:
         return {"success": False, "error": f"error on administrator client: {e}"}
     
-def update_election(electionid, end_setting, end_election, description):
+def update_election(electionid, end_setting, start_election, end_election, start_disclosure, description):
     try:
         response = requests.get(f"{URL}/receive_pub_key")
 
@@ -41,7 +41,7 @@ def update_election(electionid, end_setting, end_election, description):
             pub_key_s = import_key(response.json()['key'])
             aes_key = get_random_bytes(16)
 
-            data = pickle.dumps([electionid, end_setting, end_election, description])
+            data = pickle.dumps([electionid, end_setting, start_election, end_election, start_disclosure, description])
             enc_data, ephemeral_key = encrypt_hybrid(data, pub_key_s, aes_key)
             
             response = requests.post(f"{URL}/update_election", json={'message': enc_data})
