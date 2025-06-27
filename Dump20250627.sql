@@ -1,0 +1,218 @@
+-- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
+--
+-- Host: 127.0.0.1    Database: evoting_database
+-- ------------------------------------------------------
+-- Server version	8.0.42-0ubuntu0.22.04.1
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `BALLOTS`
+--
+
+DROP TABLE IF EXISTS `BALLOTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `BALLOTS` (
+  `BALLOT` blob NOT NULL,
+  `ELECTIONID` varchar(16) NOT NULL,
+  PRIMARY KEY (`BALLOT`(1023),`ELECTIONID`),
+  KEY `fk_BALLOTS_1_idx` (`ELECTIONID`),
+  CONSTRAINT `fk_BALLOTS_1` FOREIGN KEY (`ELECTIONID`) REFERENCES `ELECTION` (`ELECTIONID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `BALLOTS`
+--
+
+LOCK TABLES `BALLOTS` WRITE;
+/*!40000 ALTER TABLE `BALLOTS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `BALLOTS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CANDIDATES`
+--
+
+DROP TABLE IF EXISTS `CANDIDATES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CANDIDATES` (
+  `CPF` varchar(11) NOT NULL,
+  `ELECTIONID` varchar(16) NOT NULL,
+  `OFFICE_NAME` varchar(50) NOT NULL,
+  `APPROVED` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`ELECTIONID`,`CPF`),
+  KEY `fk_CANDIDATES_2_idx` (`ELECTIONID`),
+  KEY `fk_CANDIDATES_3_idx` (`OFFICE_NAME`),
+  CONSTRAINT `fk_CANDIDATES_1` FOREIGN KEY (`ELECTIONID`) REFERENCES `ELECTION` (`ELECTIONID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_CANDIDATES_3` FOREIGN KEY (`OFFICE_NAME`) REFERENCES `OFFICES` (`NAME`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CANDIDATES`
+--
+
+LOCK TABLES `CANDIDATES` WRITE;
+/*!40000 ALTER TABLE `CANDIDATES` DISABLE KEYS */;
+/*!40000 ALTER TABLE `CANDIDATES` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CREDENTIALS`
+--
+
+DROP TABLE IF EXISTS `CREDENTIALS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CREDENTIALS` (
+  `CREDENTIAL` blob NOT NULL,
+  `ELECTIONID` varchar(16) DEFAULT NULL,
+  `SALT` blob,
+  `USED` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`CREDENTIAL`(255)),
+  KEY `fk_CREDENTIALS_1_idx` (`ELECTIONID`),
+  CONSTRAINT `fk_CREDENTIALS_1` FOREIGN KEY (`ELECTIONID`) REFERENCES `ELECTION` (`ELECTIONID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CREDENTIALS`
+--
+
+LOCK TABLES `CREDENTIALS` WRITE;
+/*!40000 ALTER TABLE `CREDENTIALS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `CREDENTIALS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ELECTION`
+--
+
+DROP TABLE IF EXISTS `ELECTION`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ELECTION` (
+  `ELECTIONID` varchar(16) NOT NULL,
+  `END_SETTING` datetime DEFAULT NULL,
+  `START_ELECTION` datetime DEFAULT NULL,
+  `END_ELECTION` datetime DEFAULT NULL,
+  `START_DISCLOSURE` datetime DEFAULT NULL,
+  `DESCRIPTION` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`ELECTIONID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ELECTION`
+--
+
+LOCK TABLES `ELECTION` WRITE;
+/*!40000 ALTER TABLE `ELECTION` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ELECTION` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `OFFICES`
+--
+
+DROP TABLE IF EXISTS `OFFICES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `OFFICES` (
+  `NAME` varchar(50) NOT NULL,
+  `ELECTIONID` varchar(16) NOT NULL,
+  PRIMARY KEY (`NAME`,`ELECTIONID`),
+  KEY `fk_OFFICES_1_idx` (`ELECTIONID`),
+  CONSTRAINT `fk_OFFICES_1` FOREIGN KEY (`ELECTIONID`) REFERENCES `ELECTION` (`ELECTIONID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `OFFICES`
+--
+
+LOCK TABLES `OFFICES` WRITE;
+/*!40000 ALTER TABLE `OFFICES` DISABLE KEYS */;
+/*!40000 ALTER TABLE `OFFICES` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `USERS`
+--
+
+DROP TABLE IF EXISTS `USERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `USERS` (
+  `USERNAME` varchar(11) NOT NULL,
+  `NAME` varchar(45) DEFAULT NULL,
+  `PASSWORD` text,
+  `IS_STAFF` tinyint DEFAULT '0',
+  PRIMARY KEY (`USERNAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `USERS`
+--
+
+LOCK TABLES `USERS` WRITE;
+/*!40000 ALTER TABLE `USERS` DISABLE KEYS */;
+INSERT INTO `USERS` VALUES ('12373075628','Vítor Rezende Silva','gASVawAAAAAAAABdlChDIMTuiR78+LVFGcnm2fdTjIPhWwvJ/eUGCp4UZpvVfFcIlENAs6DyKBZEnzRgw+TnnHRV7WRyDhlU548D3v3w0Pm68ZwH6MVmzUjEvs8SqYgvNtyRSdIBGA6fCye5H8oX+jFpJJRlLg==',1);
+/*!40000 ALTER TABLE `USERS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `VOTERS`
+--
+
+DROP TABLE IF EXISTS `VOTERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `VOTERS` (
+  `CPF` varchar(11) NOT NULL,
+  `NAME` varchar(50) DEFAULT NULL,
+  `ELECTIONID` varchar(16) NOT NULL,
+  `AUTH` int DEFAULT NULL,
+  `CANDIDATE` int DEFAULT NULL,
+  `PUB_KEY` varchar(8192) DEFAULT NULL,
+  `PRIV_KEY` longtext,
+  `SALT` longtext,
+  `VOTED` int DEFAULT '0',
+  PRIMARY KEY (`CPF`,`ELECTIONID`),
+  KEY `fk_VOTERS_1_idx` (`ELECTIONID`),
+  CONSTRAINT `fk_VOTERS_1` FOREIGN KEY (`ELECTIONID`) REFERENCES `ELECTION` (`ELECTIONID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `VOTERS`
+--
+
+LOCK TABLES `VOTERS` WRITE;
+/*!40000 ALTER TABLE `VOTERS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `VOTERS` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-06-27  9:58:10
