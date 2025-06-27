@@ -23,7 +23,6 @@ django-livereload-server==0.5.1
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 Flask==3.1.0
-gyp==0.1
 httplib2==0.20.2
 idna==3.3
 importlib-metadata==4.6.4
@@ -71,7 +70,6 @@ reportlab==3.6.8
 requests==2.25.1
 rsa==4.9
 scipy==1.14.1
-screen-resolution-extra==0.0.0
 SecretStorage==3.3.1
 six==1.16.0
 sqlparse==0.5.1
