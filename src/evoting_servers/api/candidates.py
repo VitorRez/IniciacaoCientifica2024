@@ -9,17 +9,13 @@ def create_candidate(cpf, electionid, office):
 
     current_time = datetime.now()
     end_setting = search_end_setting(electionid)["data"]
-    end_election = search_end_election(electionid)["data"]
 
     if current_time > end_setting:
         db.close()
         return {"success": False, "error": "invalid end_setting value."}
     
-    if current_time > end_election:
-        db.close()
-        return {"success": False, "error": "invalid end_election value."}
-    
     try:
+        print(office)
         db.cursor().execute("INSERT INTO CANDIDATES (CPF, ELECTIONID, OFFICE_NAME, APPROVED) VALUES (%s,%s,%s,%s);", (cpf, electionid, office, 0))
         db.commit()
         db.close()

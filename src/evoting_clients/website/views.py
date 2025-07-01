@@ -373,6 +373,8 @@ def candidate_page(request):
             for candidate in candidates:
                 candidate_list.append(candidate)
 
+        print(candidate_list)
+
         if request.method != 'POST':
             return render(request, 'admin/candidates.html', {
                 "page": "Candidates",
@@ -838,6 +840,8 @@ def election_page(request):
             office_name = request.POST.get('office_name')
             apply_password = request.POST.get('apply_password')
 
+            print(office_name)
+
             end_setting = datetime.strptime(election['end_setting'], "%a, %d %b %Y %H:%M:%S %Z")
             if current_time > end_setting:
                 return render(request, 'home/election.html', {
@@ -858,6 +862,7 @@ def election_page(request):
                 })
             
             response = applying(cpf, electionid, office_name)
+            print(response)
             if response['success']:
                 election = get_election(electionid)['data']
                 voter = get_voter(cpf, electionid)['data']

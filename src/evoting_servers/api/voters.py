@@ -129,9 +129,12 @@ def get_voter(cpf, electionid):
                 VOTERS.PRIV_KEY AS priv_key,
                 VOTERS.SALT AS salt,
                 VOTERS.VOTED AS voted,
+                ELECTION.ELECTIONID as electionid,
                 ELECTION.DESCRIPTION AS description,
                 ELECTION.END_SETTING AS end_setting,
-                ELECTION.END_ELECTION AS end_election
+                ELECTION.START_ELECTION AS start_election,
+                ELECTION.END_ELECTION AS end_election,
+                ELECTION.START_DISCLOSURE AS start_disclosure
             FROM 
                 VOTERS
             INNER JOIN
@@ -171,8 +174,10 @@ def get_voters():
                 VOTERS.SALT,
                 ELECTION.ELECTIONID,
                 ELECTION.DESCRIPTION,
-                ELECTION.END_SETTING,
-                ELECTION.END_ELECTION
+                ELECTION.END_SETTING AS end_setting,
+                ELECTION.START_ELECTION AS start_election,
+                ELECTION.END_ELECTION AS end_election,
+                ELECTION.START_DISCLOSURE AS start_disclosure
             FROM 
                 VOTERS
             INNER JOIN
@@ -198,7 +203,9 @@ def get_voters():
                 "electionid": row[8],
                 "description": row[9],
                 "end_setting": row[10],
-                "end_election": row[11]
+                "start_election": row[11],
+                "end_election": row[12],
+                "start_disclosure": row[13]
             }
             for row in rows
         ]
@@ -229,7 +236,9 @@ def get_voters_by_cpf(cpf):
                 ELECTION.ELECTIONID,
                 ELECTION.DESCRIPTION,
                 ELECTION.END_SETTING,
-                ELECTION.END_ELECTION
+                ELECTION.START_ELECTION,
+                ELECTION.END_ELECTION,
+                ELECTION.START_DISCLOSURE
             FROM 
                 VOTERS
             INNER JOIN
@@ -261,7 +270,9 @@ def get_voters_by_cpf(cpf):
                 "electionid": row[8],
                 "description": row[9],
                 "end_setting": row[10],
-                "end_election": row[11]
+                "start_election": row[11],
+                "end_election": row[12],
+                "start_disclosure": row[13]
             }
             for row in rows
         ]
@@ -292,7 +303,9 @@ def get_voters_by_election(electionid):
                 ELECTION.ELECTIONID,
                 ELECTION.DESCRIPTION,
                 ELECTION.END_SETTING,
-                ELECTION.END_ELECTION
+                ELECTION.START_ELECTION,
+                ELECTION.END_ELECTION,
+                ELECTION.START_DISCLOSURE
             FROM 
                 VOTERS
             INNER JOIN
@@ -324,7 +337,9 @@ def get_voters_by_election(electionid):
                 "electionid": row[8],
                 "description": row[9],
                 "end_setting": row[10],
-                "end_election": row[11]
+                "start_election": row[11],
+                "end_election": row[12],
+                "start_disclosure": row[13]
             }
             for row in rows
         ]

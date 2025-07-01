@@ -6,10 +6,10 @@ def run_server(path):
 
 if __name__ == "__main__":
     servers = [
-        "src/evoting_servers/adm_server.py",
-        "src/evoting_servers/reg_server.py",
-        "src/evoting_servers/tal_server.py",
-        "src/evoting_servers/val_server.py",
+        "adm_server.py",
+        "reg_server.py",
+        "tal_server.py",
+        "val_server.py",
     ]
 
     processes = []

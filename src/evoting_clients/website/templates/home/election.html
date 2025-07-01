@@ -23,16 +23,24 @@
                     <p> {{ election.description }} </p>
                 </div>
                 <div class="info-item">
-                    <h3>Election ID: </h3>
+                    <h3>Election: </h3>
                     <p> {{ election.electionid }} </p>
                 </div>
                 <div class="info-item">
+                    <h3>End of preparation: </h3>
+                    <p id="end_setting"> {{ election.end_setting }} </p>
+                </div>
+                <div class="info-item">
                     <h3>Starts: </h3>
-                    <p id="start_time"> {{ election.end_setting }} </p>
+                    <p id="start_election"> {{ election.start_election }} </p>
                 </div>
                 <div class="info-item">
                     <h3>Ends: </h3>
-                    <p id="end_time"> {{ election.end_election }} </p>
+                    <p id="end_election"> {{ election.end_election }} </p>
+                </div>
+                <div class="info-item">
+                    <h3>Results after: </h3>
+                    <p id="start_disclosure"> {{ election.start_disclosure }} </p>
                 </div>
                 <div class="info-item">
                     <h3>Authenticated: </h3>
@@ -104,7 +112,7 @@
                     <select name='office_name' required>
                         <option value='' disabled selected>Select one office</office>
                             {% for office in election.offices %}
-                                <option value={{office.office_name}}>{{office.office_name}}</option>
+                                <option value="{{office.office_name}}">{{office.office_name}}</option>
                             {% endfor %}
                     </select>
                     <h3>Password:</h3>
@@ -142,18 +150,22 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const start_time_str = document.getElementById("start_time").textContent.trim()
-            const end_time_str = document.getElementById("end_time").textContent.trim()
+            const end_setting_str = document.getElementById("end_setting").textContent.trim();
+            const start_election_str = document.getElementById("start_election").textContent.trim();
+            const end_election_str = document.getElementById("end_election").textContent.trim();
+            const start_disclosure_str = document.getElementById("start_disclosure").textContent.trim();
 
-            const startTime = new Date(start_time_str.replace(" GMT", ""));
-            const endTime = new Date(end_time_str.replace(" GMT", ""));
+            const end_setting = new Date(end_setting_str.replace(" GMT", ""));
+            const start_election = new Date(start_election_str.replace(" GMT", ""));
+            const end_election = new Date(end_election_str.replace(" GMT", ""));
+            const start_disclosure = new Date(start_disclosure_str.replace(" GMT", ""));
             const now = new Date();
             
-            if (now >= startTime && now <= endTime) {
+            if (now >= start_election && now <= end_election) {
                 document.getElementById("vote_button_container").style.display = "block";
             }
 
-            if (now <= startTime) {
+            if (now <= end_setting) {
                 document.getElementById("form_auth").style.display = "block";
                 document.getElementById("form_candidate").style.display = "block";
             }

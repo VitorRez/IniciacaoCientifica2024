@@ -210,6 +210,7 @@ def applying():
     result = update_voter(voter['cpf'], voter['name'], voter['electionid'], voter['auth'], 1, voter['pub_key'], voter['priv_key'], voter['salt'])
     if result['success']:
         result = create_candidate(cpf, electionid, office_name)
+        print(result)
 
         if result['success']:
             return jsonify({"success": True, "message": "ok"}), 200

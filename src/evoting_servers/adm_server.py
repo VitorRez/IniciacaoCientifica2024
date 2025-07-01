@@ -126,8 +126,10 @@ def createCandidate():
 def getCandidates():
     enc_data = request.json['message']
     electionid = decrypt_hybrid(enc_data, priv_key)
+    print(electionid)
 
     result = get_candidates(electionid)
+    print(result)
 
     if result["success"]:
         return jsonify(result), 200

@@ -85,7 +85,7 @@ def applying(cpf, electionid, office_name):
         response = requests.get(f"{URL}/receive_pub_key")
 
         if response.status_code == 200:
-            print(1)
+            print(office_name)
             pub_key_s = import_key(response.json()['key'])
             print(2)
             aes_key = get_random_bytes(16)

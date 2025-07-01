@@ -51,17 +51,21 @@
                         <tr>
                             <th>Election ID</th>
                             <th>End Setting</th>
+                            <th>Start Election</th>
                             <th>End Election</th>
+                            <th>Start Disclosure</th>
                             <th>Description</th>
                             <th>Delete?</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for election in elections %}
-                        <tr onclick="window.location.href='{% url 'election' %}?electionid={{ election.electionid  }}'">
+                        <tr onclick="window.location.href='{% url 'election_admin' %}?electionid={{ election.electionid  }}'">
                             <td>{{ election.electionid }}</td>
                             <td>{{ election.end_setting }}</td>
+                            <td>{{ election.start_election }}</th>
                             <td>{{ election.end_election }}</td>
+                            <td>{{ election.start_disclosure }}</td>
                             <td>{{ election.description|default:"N/A" }}</td>
                             <td>
                                 <form method="POST" action="{% url 'create_elections' %}">
